@@ -14,12 +14,16 @@ async function writeDB(data) {
 // Delete physical upload file from both public/uploads and dist/client/uploads
 async function deletePhysicalUploadFile(fileUrl) {
   if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.startsWith('/uploads/')) return;
-  const fileName = fileUrl.replace('/uploads/', '');
-  const publicPath = path.resolve(process.cwd(), 'public/uploads', fileName);
-  const distPath = path.resolve(process.cwd(), 'dist/client/uploads', fileName);
+  try {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const fileName = fileUrl.replace('/uploads/', '');
+    const publicPath = path.resolve(process.cwd(), 'public/uploads', fileName);
+    const distPath = path.resolve(process.cwd(), 'dist/client/uploads', fileName);
 
-  try { await fs.unlink(publicPath); } catch (e) {}
-  try { await fs.unlink(distPath); } catch (e) {}
+    try { await fs.unlink(publicPath); } catch (e) {}
+    try { await fs.unlink(distPath); } catch (e) {}
+  } catch (_) {}
 }
 
 // Recursively find all /uploads/... URLs inside any nested object/array

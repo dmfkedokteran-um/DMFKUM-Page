@@ -305,6 +305,44 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       }
     }
 
+    function updateCategoryDropdown(komisiData?: any[]) {
+      const select = document.getElementById('news-form-category') as HTMLSelectElement | null;
+      if (!select) return;
+      let list = komisiData;
+      if (!list) {
+        try {
+          const cachedSettings = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          if (cachedSettings?.orgStructure?.komisi) {
+            list = cachedSettings.orgStructure.komisi;
+          }
+        } catch (e) {}
+      }
+      if (Array.isArray(list) && list.length > 0) {
+        const currentValue = select.value;
+        const optionsHtml = [
+          '<option value="" disabled selected>Pilih Kategori</option>',
+          '<option value="Umum">Umum</option>',
+          ...list.map((k: any) => `<option value="${k.code} – ${k.title}">${k.code} – ${k.title}</option>`)
+        ].join('');
+        select.innerHTML = optionsHtml;
+        if (currentValue) select.value = currentValue;
+      }
+    }
+
+    updateCategoryDropdown();
+
+    fetch('/api/settings')
+      .then(res => res.ok ? res.json() : null)
+      .then(resData => {
+        if (resData && resData.settings && resData.settings.orgStructure?.komisi) {
+          const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          const merged = { ...current, ...resData.settings };
+          localStorage.setItem('dmfk_settings', JSON.stringify(merged));
+          updateCategoryDropdown(resData.settings.orgStructure.komisi);
+        }
+      })
+      .catch(() => {});
+
     // 🌐 Fetch latest from cloud server database to sync across all devices
     fetch('/api/news')
       .then(res => res.ok ? res.json() : null)
@@ -440,6 +478,7 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
 
     function openFormModal(news: NewsItem | null = null) {
       if (!newsFormModal || !newsForm) return;
+      updateCategoryDropdown();
 
       const titleHeader = document.getElementById('form-modal-title');
       const idInput = document.getElementById('news-form-id') as HTMLInputElement | null;
