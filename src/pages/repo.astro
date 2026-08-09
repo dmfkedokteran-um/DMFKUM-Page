@@ -283,7 +283,7 @@ const docs = defaultDocsData || MOCK_DOCS;
   const dbName = 'DMFKUMRepoDB';
   const storeName = 'documents';
 
-  function openDB() {
+  function openDB(): Promise<any> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(dbName, 1);
       request.onupgradeneeded = () => {
@@ -297,9 +297,9 @@ const docs = defaultDocsData || MOCK_DOCS;
     });
   }
 
-  async function getFileFromDB(id) {
+  async function getFileFromDB(id: number): Promise<any> {
     try {
-      const db = await openDB();
+      const db: any = await openDB();
       return new Promise((resolve, reject) => {
         const transaction = db.transaction(storeName, 'readonly');
         const store = transaction.objectStore(storeName);
@@ -478,7 +478,7 @@ const docs = defaultDocsData || MOCK_DOCS;
       } else {
         const fileBlob = await getFileFromDB(doc.id);
         if (fileBlob) {
-          const url = URL.createObjectURL(fileBlob);
+          const url = URL.createObjectURL(fileBlob as Blob);
           const a = document.createElement('a');
           a.href = url;
           a.download = `${doc.title}.${doc.ext.toLowerCase()}`;
@@ -576,7 +576,7 @@ const docs = defaultDocsData || MOCK_DOCS;
         } else {
           const fileBlob = await getFileFromDB(doc.id);
           if (fileBlob) {
-            currentObjectURL = URL.createObjectURL(fileBlob);
+            currentObjectURL = URL.createObjectURL(fileBlob as Blob);
             if (doc.ext === 'PDF') {
               contentEl.innerHTML = `<iframe src="${currentObjectURL}" class="w-full h-full min-h-[550px] border-none bg-white rounded-xl"></iframe>`;
             } else if (['PNG', 'JPG', 'JPEG', 'WEBP'].includes(doc.ext.toUpperCase())) {
@@ -651,7 +651,7 @@ const docs = defaultDocsData || MOCK_DOCS;
         if (file) {
           const nameParts = file.name.split('.');
           const rawExt = nameParts[nameParts.length - 1].toUpperCase();
-          const extSelect = document.getElementById('doc-form-ext');
+          const extSelect = document.getElementById('doc-form-ext') as HTMLSelectElement | null;
           if (extSelect) {
             if (![...extSelect.options].some(o => o.value === rawExt)) {
               const opt = document.createElement('option');
@@ -659,7 +659,7 @@ const docs = defaultDocsData || MOCK_DOCS;
             }
             extSelect.value = rawExt;
           }
-          const titleInput = document.getElementById('doc-form-title');
+          const titleInput = document.getElementById('doc-form-title') as HTMLInputElement | null;
           if (titleInput && !titleInput.value) titleInput.value = nameParts.slice(0, -1).join('.');
         }
       });
