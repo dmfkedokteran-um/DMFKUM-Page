@@ -10,6 +10,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "audit": "node scripts/health-check.mjs",
     "astro": "astro"
   },
   "dependencies": {
