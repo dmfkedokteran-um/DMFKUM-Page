@@ -277,10 +277,10 @@ const docsList = defaultDocsData || MOCK_DOCS;
     // 🌐 Fetch latest settings from server to sync hero image across devices
     fetch('/api/settings')
       .then(res => res.ok ? res.json() : null)
-      .then(serverSettings => {
-        if (serverSettings && typeof serverSettings === 'object') {
+      .then(resData => {
+        if (resData && resData.isCloud && resData.settings && typeof resData.settings === 'object') {
           const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
-          const merged = { ...current, ...serverSettings };
+          const merged = { ...current, ...resData.settings };
           localStorage.setItem('dmfk_settings', JSON.stringify(merged));
           if (merged.heroImage) {
             const heroBg = document.getElementById('hero-bg-overlay');

@@ -23,8 +23,8 @@ async function deletePhysicalUploadFile(fileUrl) {
 }
 
 export async function GET() {
-  const docs = await readDB();
-  return new Response(JSON.stringify(docs), {
+  const { data, isCloud } = await readCloudDB('docs', defaultDocsData);
+  return new Response(JSON.stringify({ docs: data, isCloud }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' }
   });
@@ -33,7 +33,7 @@ export async function GET() {
 export async function POST({ request }) {
   try {
     const entry = await request.json();
-    const docs = await readDB();
+    const { data: docs } = await readCloudDB('docs', defaultDocsData);
 
     let updatedDocs;
     if (entry.id) {
@@ -69,7 +69,7 @@ export async function POST({ request }) {
 export async function DELETE({ request }) {
   try {
     const { id } = await request.json();
-    const docs = await readDB();
+    const { data: docs } = await readCloudDB('docs', defaultDocsData);
     
     // Find target document item to delete physical file from server disk
     const target = docs.find(item => item.id === id);

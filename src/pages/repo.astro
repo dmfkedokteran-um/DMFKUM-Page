@@ -417,12 +417,12 @@ const docs = defaultDocsData || MOCK_DOCS;
     // 🌐 Fetch latest from cloud server database to sync across all devices
     fetch('/api/docs')
       .then(res => res.ok ? res.json() : null)
-      .then(serverDocs => {
-        if (Array.isArray(serverDocs) && serverDocs.length > 0) {
-          const serverStr = JSON.stringify(serverDocs);
+      .then(resData => {
+        if (resData && resData.isCloud && Array.isArray(resData.docs) && resData.docs.length > 0) {
+          const serverStr = JSON.stringify(resData.docs);
           if (serverStr !== localStorage.getItem('dmfk_docs')) {
             localStorage.setItem('dmfk_docs', serverStr);
-            docsList = serverDocs;
+            docsList = resData.docs;
             renderDocsCards(docsList);
           }
         }

@@ -301,12 +301,12 @@ const newsList = defaultNewsData || MOCK_NEWS;
     // 🌐 Fetch latest from cloud server database to sync across all devices
     fetch('/api/news')
       .then(res => res.ok ? res.json() : null)
-      .then(serverNews => {
-        if (Array.isArray(serverNews) && serverNews.length > 0) {
-          const serverStr = JSON.stringify(serverNews);
+      .then(resData => {
+        if (resData && resData.isCloud && Array.isArray(resData.news) && resData.news.length > 0) {
+          const serverStr = JSON.stringify(resData.news);
           if (serverStr !== localStorage.getItem('dmfk_news')) {
             localStorage.setItem('dmfk_news', serverStr);
-            newsList = serverNews;
+            newsList = resData.news;
             renderNewsCards(newsList);
           }
         }

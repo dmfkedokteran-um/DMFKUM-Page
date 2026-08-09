@@ -23,8 +23,8 @@ async function deletePhysicalUploadFile(fileUrl) {
 }
 
 export async function GET() {
-  const news = await readDB();
-  return new Response(JSON.stringify(news), {
+  const { data, isCloud } = await readCloudDB('news', defaultNewsData);
+  return new Response(JSON.stringify({ news: data, isCloud }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' }
   });
@@ -33,7 +33,7 @@ export async function GET() {
 export async function POST({ request }) {
   try {
     const entry = await request.json();
-    const news = await readDB();
+    const { data: news } = await readCloudDB('news', defaultNewsData);
 
     let updatedNews;
     if (entry.id) {
@@ -68,7 +68,7 @@ export async function POST({ request }) {
 export async function DELETE({ request }) {
   try {
     const { id } = await request.json();
-    const news = await readDB();
+    const { data: news } = await readCloudDB('news', defaultNewsData);
     
     // Find target item to delete cover image file from server disk
     const target = news.find(item => item.id === id);

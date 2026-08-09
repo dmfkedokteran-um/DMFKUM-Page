@@ -18,8 +18,8 @@ function getDbCredentials() {
 }
 
 /**
- * Reads data from Cloud Database (Upstash Redis REST) if environment variables are set,
- * otherwise falls back to reading local JSON files in /database/ folder.
+ * Reads data from Cloud Database (Upstash Redis REST) if environment variables are set.
+ * Returns { data, isCloud: boolean }.
  */
 export async function readCloudDB(key, fallbackData) {
   const { url, token } = getDbCredentials();
@@ -33,7 +33,7 @@ export async function readCloudDB(key, fallbackData) {
         const json = await res.json();
         if (json.result) {
           const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
-          return parsed;
+          return { data: parsed, isCloud: true };
         }
       }
     } catch (err) {
@@ -45,28 +45,28 @@ export async function readCloudDB(key, fallbackData) {
   try {
     const filePath = path.resolve(process.cwd(), `database/${key}.json`);
     const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data);
+    return { data: JSON.parse(data), isCloud: false };
   } catch (e) {
-    return fallbackData;
+    return { data: fallbackData, isCloud: false };
   }
 }
 
 /**
- * Writes data to Cloud Database (Upstash Redis REST) if environment variables are set,
- * and updates local JSON files in /database/ if local environment allows.
+ * Writes data to Cloud Database (Upstash Redis REST) if environment variables are set.
  */
 export async function writeCloudDB(key, data) {
   const { url, token } = getDbCredentials();
 
   if (url && token) {
     try {
-      await fetch(`${url}/set/dmfk_${key}`, {
+      // Upstash REST API command array format: ["SET", "dmfk_key", "stringified_data"]
+      await fetch(url, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(JSON.stringify(data))
+        body: JSON.stringify(["SET", `dmfk_${key}`, JSON.stringify(data)])
       });
     } catch (err) {
       console.error(`[CloudDB] SET dmfk_${key} error:`, err);

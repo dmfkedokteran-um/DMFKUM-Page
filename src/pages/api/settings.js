@@ -34,8 +34,8 @@ function collectUploadUrls(obj, set = new Set()) {
 }
 
 export async function GET() {
-  const settings = await readDB();
-  return new Response(JSON.stringify(settings), {
+  const { data, isCloud } = await readCloudDB('settings', defaultSettingsData);
+  return new Response(JSON.stringify({ settings: data, isCloud }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' }
   });
@@ -44,7 +44,7 @@ export async function GET() {
 export async function POST({ request }) {
   try {
     const entry = await request.json();
-    const current = await readDB();
+    const { data: current } = await readCloudDB('settings', defaultSettingsData);
 
     const currentUrls = collectUploadUrls(current);
     const updated = { ...current, ...entry };

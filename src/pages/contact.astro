@@ -245,8 +245,9 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
     // 🌐 Fetch latest settings from server to sync contact info across devices
     fetch('/api/settings')
       .then(res => res.ok ? res.json() : null)
-      .then(serverSettings => {
-        if (serverSettings && typeof serverSettings === 'object') {
+      .then(resData => {
+        if (resData && resData.isCloud && resData.settings && typeof resData.settings === 'object') {
+          const serverSettings = resData.settings;
           const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
           const merged = { ...current, ...serverSettings };
           const currentStr = localStorage.getItem('dmfk_settings');
