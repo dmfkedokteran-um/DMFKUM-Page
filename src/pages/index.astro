@@ -337,23 +337,50 @@ const docsList = defaultDocsData || MOCK_DOCS;
       `).join('');
     }
 
-    // 1. Sync from localStorage immediately
-    const cachedNews = localStorage.getItem('dmfk_news');
-    if (cachedNews) {
-      try { renderHomeNews(JSON.parse(cachedNews)); } catch (e) {}
-    }
-    const cachedDocs = localStorage.getItem('dmfk_docs');
-    if (cachedDocs) {
-      try { renderHomeDocs(JSON.parse(cachedDocs)); } catch (e) {}
+    function mergeItems(localItems: any[], serverItems: any[]) {
+      if (!Array.isArray(localItems) || localItems.length === 0) return serverItems || [];
+      if (!Array.isArray(serverItems) || serverItems.length === 0) return localItems || [];
+      const map = new Map();
+      serverItems.forEach(item => {
+        if (item && item.id !== undefined) map.set(String(item.id), item);
+      });
+      localItems.forEach(item => {
+        if (item && item.id !== undefined) map.set(String(item.id), item);
+      });
+      return Array.from(map.values());
     }
 
-    // 2. Sync from cloud server APIs
+    // 1. Sync from localStorage immediately
+    const cachedNewsStr = localStorage.getItem('dmfk_news');
+    let currentNews: any[] = [];
+    if (cachedNewsStr) {
+      try {
+        currentNews = JSON.parse(cachedNewsStr);
+        if (Array.isArray(currentNews) && currentNews.length > 0) {
+          renderHomeNews(currentNews);
+        }
+      } catch (e) {}
+    }
+
+    const cachedDocsStr = localStorage.getItem('dmfk_docs');
+    let currentDocs: any[] = [];
+    if (cachedDocsStr) {
+      try {
+        currentDocs = JSON.parse(cachedDocsStr);
+        if (Array.isArray(currentDocs) && currentDocs.length > 0) {
+          renderHomeDocs(currentDocs);
+        }
+      } catch (e) {}
+    }
+
+    // 2. Sync from server APIs (merging server and local items so no items are lost)
     fetch('/api/news')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && Array.isArray(data.news) && data.news.length > 0) {
-          localStorage.setItem('dmfk_news', JSON.stringify(data.news));
-          renderHomeNews(data.news);
+          const merged = mergeItems(currentNews, data.news);
+          localStorage.setItem('dmfk_news', JSON.stringify(merged));
+          renderHomeNews(merged);
         }
       }).catch(() => {});
 
@@ -361,8 +388,9 @@ const docsList = defaultDocsData || MOCK_DOCS;
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && Array.isArray(data.docs) && data.docs.length > 0) {
-          localStorage.setItem('dmfk_docs', JSON.stringify(data.docs));
-          renderHomeDocs(data.docs);
+          const merged = mergeItems(currentDocs, data.docs);
+          localStorage.setItem('dmfk_docs', JSON.stringify(merged));
+          renderHomeDocs(merged);
         }
       }).catch(() => {});
 

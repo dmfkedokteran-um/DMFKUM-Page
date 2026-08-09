@@ -405,13 +405,15 @@ const docs = defaultDocsData || MOCK_DOCS;
     fetch('/api/docs')
       .then(res => res.ok ? res.json() : null)
       .then(resData => {
-        if (resData && resData.isCloud && Array.isArray(resData.docs) && resData.docs.length > 0) {
-          const serverStr = JSON.stringify(resData.docs);
-          if (serverStr !== localStorage.getItem('dmfk_docs')) {
-            localStorage.setItem('dmfk_docs', serverStr);
-            docsList = resData.docs;
-            renderDocsCards(docsList);
-          }
+        if (resData && Array.isArray(resData.docs) && resData.docs.length > 0) {
+          const cached = JSON.parse(localStorage.getItem('dmfk_docs') || '[]');
+          const map = new Map();
+          resData.docs.forEach((d: any) => { if (d && d.id !== undefined) map.set(String(d.id), d); });
+          cached.forEach((d: any) => { if (d && d.id !== undefined) map.set(String(d.id), d); });
+          const merged = Array.from(map.values());
+          localStorage.setItem('dmfk_docs', JSON.stringify(merged));
+          docsList = merged;
+          renderDocsCards(docsList);
         }
       })
       .catch(() => {});

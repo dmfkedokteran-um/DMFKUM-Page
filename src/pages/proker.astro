@@ -347,13 +347,15 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
     fetch('/api/news')
       .then(res => res.ok ? res.json() : null)
       .then(resData => {
-        if (resData && resData.isCloud && Array.isArray(resData.news) && resData.news.length > 0) {
-          const serverStr = JSON.stringify(resData.news);
-          if (serverStr !== localStorage.getItem('dmfk_news')) {
-            localStorage.setItem('dmfk_news', serverStr);
-            newsList = resData.news;
-            renderNewsCards(newsList);
-          }
+        if (resData && Array.isArray(resData.news) && resData.news.length > 0) {
+          const cached = JSON.parse(localStorage.getItem('dmfk_news') || '[]');
+          const map = new Map();
+          resData.news.forEach((n: any) => { if (n && n.id !== undefined) map.set(String(n.id), n); });
+          cached.forEach((n: any) => { if (n && n.id !== undefined) map.set(String(n.id), n); });
+          const merged = Array.from(map.values());
+          localStorage.setItem('dmfk_news', JSON.stringify(merged));
+          newsList = merged;
+          renderNewsCards(newsList);
         }
       })
       .catch(() => {});
