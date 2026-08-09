@@ -347,9 +347,9 @@ const docs = defaultDocsData || MOCK_DOCS;
 
     function renderDocsCards(items: DocItem[]) {
       if (!container) return;
-      const getExtColor = (ext: string) => ext === 'PDF' ? 'bg-rose-50 text-rose-600' : ext === 'DOCX' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600';
-      container.innerHTML = items.map(doc => {
-        const extClass = getExtColor(doc.ext);
+      const htmlArray = items.map((doc) => {
+        const extClass = doc.ext === 'PDF' ? 'bg-rose-50 text-rose-600' : doc.ext === 'DOCX' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600';
+        const adminHiddenClass = isAdmin ? '' : 'hidden';
         return `
           <div class="doc-item bg-white p-5 md:p-6 rounded-[2rem] shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.05)] border border-gray-100 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-6 group"
             data-title="${doc.title}"
@@ -370,7 +370,7 @@ const docs = defaultDocsData || MOCK_DOCS;
               </div>
             </div>
             <div class="flex gap-3 sm:ml-auto w-full sm:w-auto items-center">
-              <div class="admin-only ${isAdmin ? '' : 'hidden'} flex gap-2">
+              <div class="admin-only ${adminHiddenClass} flex gap-2">
                 <button class="edit-doc-btn p-2.5 bg-gray-50 text-blue-600 rounded-full hover:bg-blue-50 transition-colors cursor-pointer outline-none" data-id="${doc.id}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
@@ -389,7 +389,8 @@ const docs = defaultDocsData || MOCK_DOCS;
             </div>
           </div>
         `;
-      }).join('');
+      });
+      container.innerHTML = htmlArray.join('');
     }
 
     // ✅ Apply any admin edits stored in localStorage
