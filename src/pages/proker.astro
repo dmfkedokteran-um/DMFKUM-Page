@@ -348,13 +348,8 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       .then(res => res.ok ? res.json() : null)
       .then(resData => {
         if (resData && Array.isArray(resData.news) && resData.news.length > 0) {
-          const cached = JSON.parse(localStorage.getItem('dmfk_news') || '[]');
-          const map = new Map();
-          resData.news.forEach((n: any) => { if (n && n.id !== undefined) map.set(String(n.id), n); });
-          cached.forEach((n: any) => { if (n && n.id !== undefined) map.set(String(n.id), n); });
-          const merged = Array.from(map.values());
-          localStorage.setItem('dmfk_news', JSON.stringify(merged));
-          newsList = merged;
+          localStorage.setItem('dmfk_news', JSON.stringify(resData.news));
+          newsList = resData.news;
           renderNewsCards(newsList);
         }
       })
