@@ -111,8 +111,8 @@ const DEFAULT_ORG_STRUCTURE = {
   ]
 };
 
-// Load site settings (Visi, Misi, OrgBgImage, Parliament, OrgTitle, OrgSubtitle, & OrgStructure)
-const SETTINGS_DB = path.resolve(process.cwd(), 'database/settings.json');
+import defaultSettingsData from "../../database/settings.json";
+
 let siteSettings = {
   orgBgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
   parliamentName: "Parlemen Nawa Cita 2026",
@@ -125,20 +125,10 @@ let siteSettings = {
     "Mewujudkan ekosistem administrasi transparan.",
     "Menjalin kemitraan kolaboratif lintas sektor."
   ],
-  orgStructure: DEFAULT_ORG_STRUCTURE
+  orgStructure: DEFAULT_ORG_STRUCTURE,
+  ...defaultSettingsData,
+  orgStructure: (defaultSettingsData && defaultSettingsData.orgStructure) || DEFAULT_ORG_STRUCTURE
 };
-
-try {
-  const rawSettings = await fs.readFile(SETTINGS_DB, 'utf-8');
-  const parsed = JSON.parse(rawSettings);
-  siteSettings = {
-    ...siteSettings,
-    ...parsed,
-    orgStructure: parsed.orgStructure || DEFAULT_ORG_STRUCTURE
-  };
-} catch (e) {
-  // fallback default settings
-}
 
 const org = siteSettings.orgStructure;
 ---

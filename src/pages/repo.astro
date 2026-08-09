@@ -2,23 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 import { Search, Filter, FileText, Eye, Download, File, X, Plus, Edit, Trash2 } from 'lucide-astro';
 import { MOCK_DOCS } from '../data/mockData.js';
-import fs from 'fs/promises';
-import path from 'path';
-
-// Enable Server-Side Rendering (SSR)
-export const prerender = false;
+import defaultDocsData from "../../database/docs.json";
 
 const categories = ["Semua", "Regulasi", "Laporan", "Panduan", "Materi Publik"];
-
-// Load documents from disk database
-const DB_PATH = path.resolve(process.cwd(), 'database/docs.json');
-let docs: any[] = [];
-try {
-  const raw = await fs.readFile(DB_PATH, 'utf-8');
-  docs = JSON.parse(raw);
-} catch (error) {
-  docs = MOCK_DOCS;
-}
+const docs = defaultDocsData || MOCK_DOCS;
 ---
 
 <Layout title="Repositori Berkas - DMFK UM" description="Pusat pangkalan data publik resmi DMFK UM. Temukan, pratinjau, dan unduh dokumen resmi organisasi secara instan.">

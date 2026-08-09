@@ -1,27 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { Mail, MessageCircle, Instagram, Link2, Edit, X } from 'lucide-astro';
-import fs from 'fs/promises';
-import path from 'path';
+import defaultSettingsData from "../../database/settings.json";
 
-// Enable Server-Side Rendering (SSR)
-export const prerender = false;
-
-// Load site settings (Contact details)
-const SETTINGS_DB = path.resolve(process.cwd(), 'database/settings.json');
 let siteSettings = {
   contactEmail: "dmfk.um@um.ac.id",
   contactPhone: "0812-3456-7890",
   contactInstagram: "@dmfk.um",
   contactLinktree: "linktr.ee/dmfk.um",
-  contactAddress: "Gedung FK Lt. 2, Universitas Negeri Malang, Jl. Semarang 5, Malang"
+  contactAddress: "Gedung FK Lt. 2, Universitas Negeri Malang, Jl. Semarang 5, Malang",
+  ...defaultSettingsData
 };
-try {
-  const rawSettings = await fs.readFile(SETTINGS_DB, 'utf-8');
-  siteSettings = JSON.parse(rawSettings);
-} catch (e) {
-  // fallback default settings
-}
 
 // Format Phone Number for WhatsApp API Link
 const cleanedPhone = (siteSettings.contactPhone || '').replace(/\D/g, '');

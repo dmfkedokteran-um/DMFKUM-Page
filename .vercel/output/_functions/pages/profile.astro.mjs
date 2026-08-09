@@ -2,8 +2,7 @@
 import { e as createComponent, k as renderComponent, m as maybeRenderHead, r as renderTemplate, h as createAstro, l as renderScript, g as addAttribute } from '../chunks/astro/server_DfYfYe5M.mjs';
 import 'piccolore';
 import { $ as $$, a as $$Layout, b as $$Edit, c as $$X } from '../chunks/Layout_rB9qe157.mjs';
-import fs from 'fs/promises';
-import path from 'path';
+import { d as defaultSettingsData } from '../chunks/settings_3-N7cZJs.mjs';
 import { $ as $$Eye } from '../chunks/Eye_BJm-XbQG.mjs';
 import { $ as $$Plus } from '../chunks/Plus_B1Afkwfj.mjs';
 export { renderers } from '../renderers.mjs';
@@ -133,7 +132,6 @@ const $$Profile = createComponent(async ($$result, $$props, $$slots) => {
       }
     ]
   };
-  const SETTINGS_DB = path.resolve(process.cwd(), "database/settings.json");
   let siteSettings = {
     orgBgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
     parliamentName: "Parlemen Nawa Cita 2026",
@@ -146,18 +144,9 @@ const $$Profile = createComponent(async ($$result, $$props, $$slots) => {
       "Mewujudkan ekosistem administrasi transparan.",
       "Menjalin kemitraan kolaboratif lintas sektor."
     ],
-    orgStructure: DEFAULT_ORG_STRUCTURE
+    ...defaultSettingsData,
+    orgStructure: defaultSettingsData && defaultSettingsData.orgStructure || DEFAULT_ORG_STRUCTURE
   };
-  try {
-    const rawSettings = await fs.readFile(SETTINGS_DB, "utf-8");
-    const parsed = JSON.parse(rawSettings);
-    siteSettings = {
-      ...siteSettings,
-      ...parsed,
-      orgStructure: parsed.orgStructure || DEFAULT_ORG_STRUCTURE
-    };
-  } catch (e) {
-  }
   const org = siteSettings.orgStructure;
   return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Profil DMFK UM - Universitas Negeri Malang", "description": "Visi, Misi, dan Struktur Organisasi kepengurusan DMFK UM Universitas Negeri Malang." }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="py-12 px-4 max-w-7xl mx-auto animate-fade-in pb-20"> <div class="text-center mb-10"> <span class="text-rose-600 font-bold tracking-wider uppercase text-xs mb-2 block animate-pulse">Tentang Kami</span> <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">Identitas & Tujuan</h1> <p class="text-gray-500 max-w-xl mx-auto text-base leading-relaxed mb-5">Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.</p>  <button id="edit-profile-btn" class="admin-only hidden inline-flex items-center gap-2 bg-rose-600 text-white px-5 py-2.5 rounded-full font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-600/20 text-sm cursor-pointer outline-none"> ${renderComponent($$result2, "Edit", $$Edit, { "class": "h-4 w-4" })} Edit Visi & Misi
 </button> </div> <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">  <div class="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100 hover:shadow-md transition-all"> <div class="bg-rose-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4"> ${renderComponent($$result2, "Eye", $$Eye, { "class": "h-6 w-6 text-rose-600" })} </div> <h2 class="text-2xl font-extrabold text-gray-900 mb-3">Visi Utama</h2> <p class="text-gray-600 text-base leading-relaxed font-medium"> ${siteSettings.visi} </p> </div>  <div class="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100 hover:shadow-md transition-all"> <div class="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4"> ${renderComponent($$result2, "Users", $$Users, { "class": "h-6 w-6 text-blue-600" })} </div> <h2 class="text-2xl font-extrabold text-gray-900 mb-3">Misi Strategis</h2> <ul class="space-y-3"> ${siteSettings.misi.map((item) => renderTemplate`<li class="flex items-start gap-3"> <div class="bg-blue-100 p-1 rounded-full mt-1.5 shrink-0"> <div class="w-1.5 h-1.5 bg-blue-600 rounded-full"></div> </div> <span class="text-gray-600 text-base font-medium leading-normal">${item}</span> </li>`)} </ul> </div> </div>  <section class="relative overflow-hidden bg-gradient-to-br from-rose-900 via-rose-800 to-rose-950 text-white py-14 px-6 text-center rounded-[3rem] shadow-2xl shadow-rose-900/20 mb-12">  <div id="org-hero-bg" class="absolute inset-0 w-full h-full bg-cover bg-center opacity-25 mix-blend-luminosity pointer-events-none transition-all duration-700"${addAttribute(`background-image: url('${siteSettings.orgBgImage}')`, "style")}></div>  <button id="edit-org-bg-btn" class="admin-only hidden absolute top-6 right-6 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md text-gray-900 px-4 py-2 rounded-full font-bold text-xs hover:bg-white hover:scale-105 transition-all shadow-lg cursor-pointer outline-none"> ${renderComponent($$result2, "Edit", $$Edit, { "class": "h-3.5 w-3.5 text-rose-600" })} Edit Banner & Parlemen

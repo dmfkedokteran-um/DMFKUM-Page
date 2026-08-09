@@ -2,21 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import { X, ChevronRight, Plus, Edit, Trash2 } from 'lucide-astro';
 import { MOCK_NEWS } from '../data/mockData.js';
-import fs from 'fs/promises';
-import path from 'path';
+import defaultNewsData from "../../database/news.json";
 
-// Enable Server-Side Rendering (SSR)
-export const prerender = false;
-
-// Load news/program items from local JSON database
-const DB_PATH = path.resolve(process.cwd(), 'database/news.json');
-let newsList = [];
-try {
-  const raw = await fs.readFile(DB_PATH, 'utf-8');
-  newsList = JSON.parse(raw);
-} catch (error) {
-  newsList = MOCK_NEWS;
-}
+const newsList = defaultNewsData || MOCK_NEWS;
 ---
 
 <Layout title="Dokumentasi Program - DMFK UM" description="Program kerja, rekam jejak, dan publikasi kegiatan terkini dari berbagai divisi DMFK UM.">

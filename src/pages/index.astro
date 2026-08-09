@@ -2,43 +2,15 @@
 import Layout from "../layouts/Layout.astro";
 import { BookOpen, ArrowRight, ChevronRight, FileText, Download, Edit, X } from "lucide-astro";
 import { MOCK_NEWS, MOCK_DOCS } from "../data/mockData.js";
-import fs from 'fs/promises';
-import path from 'path';
+import defaultSettingsData from "../../database/settings.json";
+import defaultNewsData from "../../database/news.json";
+import defaultDocsData from "../../database/docs.json";
 
-// Enable Server-Side Rendering (SSR)
-export const prerender = false;
-
-// Load site settings (Hero Banner Image)
-const SETTINGS_DB = path.resolve(process.cwd(), 'database/settings.json');
-let siteSettings = {
+const siteSettings = defaultSettingsData || {
   heroImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80"
 };
-try {
-  const rawSettings = await fs.readFile(SETTINGS_DB, 'utf-8');
-  siteSettings = JSON.parse(rawSettings);
-} catch (e) {
-  // fallback default settings
-}
-
-// Load latest news items from disk database
-const NEWS_DB = path.resolve(process.cwd(), 'database/news.json');
-let newsList: any[] = [];
-try {
-  const raw = await fs.readFile(NEWS_DB, 'utf-8');
-  newsList = JSON.parse(raw);
-} catch (e) {
-  newsList = MOCK_NEWS;
-}
-
-// Load latest document items from disk database
-const DOCS_DB = path.resolve(process.cwd(), 'database/docs.json');
-let docsList: any[] = [];
-try {
-  const raw = await fs.readFile(DOCS_DB, 'utf-8');
-  docsList = JSON.parse(raw);
-} catch (e) {
-  docsList = MOCK_DOCS;
-}
+const newsList = defaultNewsData || MOCK_NEWS;
+const docsList = defaultDocsData || MOCK_DOCS;
 ---
 
 <Layout title="DMFK UM - Official Portal">
