@@ -1,1 +1,10 @@
-{"status":"ok","isCloudConnected":false,"hasUrl":false,"hasToken":false,"urlHost":null,"itemsCount":1}
+{
+  "status": "ok",
+  "hasUrl": false,
+  "hasToken": false,
+  "urlPreview": null,
+  "foundKvKeys": [],
+  "rawResponse": null,
+  "fetchError": null,
+  "isCloudConnected": false
+}

@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-function getDbCredentials() {
+export function getDbCredentials() {
   let url = process.env.UPSTASH_REDIS_REST_URL ||
             process.env.KV_REST_API_URL ||
             process.env.STORAGE_KV_REST_API_URL ||
@@ -63,6 +63,8 @@ export async function readCloudDB(key, fallbackData) {
         }
         // Connection is active (HTTP 200), but key doesn't exist in Redis yet
         return { data: fallbackData, isCloud: true };
+      } else {
+        console.error(`[CloudDB] GET dmfk_${key} status ${res.status}:`, await res.text());
       }
     } catch (err) {
       console.error(`[CloudDB] GET dmfk_${key} error:`, err);
