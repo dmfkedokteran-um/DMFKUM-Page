@@ -461,23 +461,15 @@ const newsList = defaultNewsData || MOCK_NEWS;
         const defaultPlaceholder = "https://images.unsplash.com/photo-1540317580384-e5d43867caa6?auto=format&fit=crop&w=600&q=80";
         let uploadedImageUrl = imageVal || defaultPlaceholder;
 
-        // Upload image file to server public/uploads/ if provided
+        // Convert file to base64 DataURL (works on static Vercel hosting)
         const file = fileInput?.files?.[0];
         if (file) {
-          const uploadData = new FormData();
-          uploadData.append('file', file);
-          try {
-            const uploadRes = await fetch('/api/upload', {
-              method: 'POST',
-              body: uploadData
-            });
-            if (uploadRes.ok) {
-              const uploadJson = await uploadRes.json();
-              uploadedImageUrl = uploadJson.fileUrl;
-            }
-          } catch (err) {
-            console.error("Physical image upload failed", err);
-          }
+          uploadedImageUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => resolve(uploadedImageUrl);
+            reader.readAsDataURL(file);
+          });
         }
 
         const entry: NewsItem = {

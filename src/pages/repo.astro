@@ -382,11 +382,11 @@ const docs = defaultDocsData || MOCK_DOCS;
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 </button>
               </div>
-              <button class="preview-doc-btn flex-1 sm:flex-none px-5 py-3 bg-gray-50 hover:bg-rose-50 text-gray-700 hover:text-rose-700 rounded-full font-bold text-sm transition-all flex items-center gap-2 cursor-pointer outline-none" data-id="${doc.id}">
+              <button class="open-doc-btn flex-1 sm:flex-none px-5 py-3 bg-gray-50 hover:bg-rose-50 text-gray-700 hover:text-rose-700 rounded-full font-bold text-sm transition-all flex items-center gap-2 cursor-pointer outline-none" data-id="${doc.id}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                Pratinjau
+                Buka
               </button>
-              <button class="download-doc-btn px-5 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full font-bold text-sm transition-all flex items-center gap-2 shadow-sm shadow-rose-600/20 cursor-pointer outline-none" data-id="${doc.id}">
+              <button class="download-btn flex-1 sm:flex-none px-5 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full font-bold text-sm transition-all flex items-center gap-2 shadow-sm shadow-rose-600/20 cursor-pointer outline-none" data-id="${doc.id}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span id="downloads-count-${doc.id}">${doc.downloads} Unduhan</span>
               </button>
@@ -658,22 +658,15 @@ const docs = defaultDocsData || MOCK_DOCS;
         
         let uploadedFileUrl = existingDoc ? existingDoc.fileUrl : '';
 
+        // Convert file to base64 DataURL (works on static Vercel hosting)
         const file = fileInput?.files?.[0];
         if (file) {
-          const uploadData = new FormData();
-          uploadData.append('file', file);
-          try {
-            const uploadRes = await fetch('/api/upload', {
-              method: 'POST',
-              body: uploadData
-            });
-            if (uploadRes.ok) {
-              const uploadJson = await uploadRes.json();
-              uploadedFileUrl = uploadJson.fileUrl;
-            }
-          } catch (err) {
-            console.error("Physical file upload failed", err);
-          }
+          uploadedFileUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => resolve(uploadedFileUrl);
+            reader.readAsDataURL(file);
+          });
         }
 
         const entry: DocItem = {

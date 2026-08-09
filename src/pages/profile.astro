@@ -682,22 +682,16 @@ const org = siteSettings.orgStructure;
       });
     }
 
-    // Helper for async File Upload to /api/upload
+    // Helper for async File Upload → converts to base64 DataURL (works on Vercel static)
     async function uploadFileIfSelected(fileInput: HTMLInputElement | null, defaultUrl: string): Promise<string> {
       const file = fileInput?.files?.[0];
       if (!file) return defaultUrl;
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        if (res.ok) {
-          const json = await res.json();
-          return json.fileUrl || defaultUrl;
-        }
-      } catch (err) {
-        console.error("File upload failed", err);
-      }
-      return defaultUrl;
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(defaultUrl);
+        reader.readAsDataURL(file);
+      });
     }
 
     // 2. Org Structure Header Background & Parliament Modal

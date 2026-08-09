@@ -310,23 +310,15 @@ const docsList = defaultDocsData || MOCK_DOCS;
         
         let newHeroImageUrl = heroUrlInput?.value || '';
 
-        // If user uploaded a physical image file from computer
+        // Convert file to base64 DataURL (works on Vercel static hosting)
         const file = heroFileInput?.files?.[0];
         if (file) {
-          const uploadData = new FormData();
-          uploadData.append('file', file);
-          try {
-            const uploadRes = await fetch('/api/upload', {
-              method: 'POST',
-              body: uploadData
-            });
-            if (uploadRes.ok) {
-              const uploadJson = await uploadRes.json();
-              newHeroImageUrl = uploadJson.fileUrl;
-            }
-          } catch (err) {
-            console.error("Hero image upload failed", err);
-          }
+          newHeroImageUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => resolve(newHeroImageUrl);
+            reader.readAsDataURL(file);
+          });
         }
 
         if (!newHeroImageUrl) {
