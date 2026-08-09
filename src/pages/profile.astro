@@ -872,15 +872,26 @@ const org = siteSettings.orgStructure;
       try {
         const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
         const updated = { ...current, ...payload };
-        localStorage.setItem('dmfk_settings', JSON.stringify(updated));
+        try {
+          localStorage.setItem('dmfk_settings', JSON.stringify(updated));
+        } catch (sErr) {}
         applyProfileSettingsToDOM(updated);
 
-        await fetch('/api/settings', {
+        const res = await fetch('/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
-        }).catch(() => {});
+        });
 
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData && resData.settings) {
+            try {
+              localStorage.setItem('dmfk_settings', JSON.stringify(resData.settings));
+            } catch (sErr) {}
+            applyProfileSettingsToDOM(resData.settings);
+          }
+        }
         return true;
       } catch (e) {
         return true;
@@ -924,14 +935,33 @@ const org = siteSettings.orgStructure;
       });
     }
 
-    // Helper for async File Upload → converts to base64 DataURL (works on Vercel static)
+    // Helper for async File Upload → uploads to server via /api/upload or converts URL
     async function uploadFileIfSelected(fileInput: HTMLInputElement | null, defaultUrl: string): Promise<string> {
       const file = fileInput?.files?.[0];
-      if (!file) return defaultUrl;
+      const convertedUrl = convertDriveUrl(defaultUrl);
+      if (!file) return convertedUrl;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.fileUrl) {
+            return data.fileUrl;
+          }
+        }
+      } catch (e) {
+        console.warn('[uploadFileIfSelected] Server upload failed, falling back to data URL:', e);
+      }
+
       return new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => resolve(defaultUrl);
+        reader.onerror = () => resolve(convertedUrl);
         reader.readAsDataURL(file);
       });
     }
