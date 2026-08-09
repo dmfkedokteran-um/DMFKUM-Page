@@ -202,15 +202,13 @@ const org = siteSettings.orgStructure;
       <div class="relative max-w-3xl mx-auto z-10 flex flex-col items-center">
         
         {/* Ruang Logo Parlemen Berjalan */}
-        {siteSettings.parliamentLogo ? (
-          <div class="mb-4 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-xl hover:scale-105 transition-transform">
-            <img src={siteSettings.parliamentLogo} alt="Logo Parlemen Berjalan" class="h-16 sm:h-20 max-w-[160px] object-contain drop-shadow-md" />
-          </div>
-        ) : (
-          <div class="mb-3 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-xl flex items-center justify-center">
+        <div id="parliament-logo-container" class="mb-4 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-xl hover:scale-105 transition-transform flex items-center justify-center">
+          {siteSettings.parliamentLogo ? (
+            <img id="parliament-logo-img" src={siteSettings.parliamentLogo} alt="Logo Parlemen Berjalan" class="h-16 sm:h-20 max-w-[160px] object-contain drop-shadow-md" />
+          ) : (
             <Award class="h-10 w-10 text-amber-300 animate-pulse" />
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Highlighted Badge Nama Parlemen Berjalan */}
         <div class="inline-flex items-center gap-2 py-1.5 px-5 rounded-full bg-gradient-to-r from-rose-500/30 via-amber-500/25 to-rose-500/30 backdrop-blur-md border border-amber-300/40 text-amber-200 text-xs font-extrabold mb-3 tracking-wider uppercase shadow-lg shadow-amber-500/10">
@@ -584,44 +582,58 @@ const org = siteSettings.orgStructure;
   function setupProfileAdmin() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
+    function applyProfileSettingsToDOM(s: any) {
+      if (!s || typeof s !== 'object') return;
+      if (s.visi) {
+        const el = document.getElementById('profile-visi-text');
+        if (el) el.textContent = `"${s.visi}"`;
+      }
+      if (Array.isArray(s.misi) && s.misi.length > 0) {
+        const ul = document.getElementById('profile-misi-list');
+        if (ul) {
+          ul.innerHTML = s.misi.map((item: string) => `
+            <li class="flex items-start gap-3">
+              <div class="bg-blue-100 p-1 rounded-full mt-1.5 shrink-0">
+                <div class="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+              </div>
+              <span class="text-gray-600 text-base font-medium leading-normal">${item}</span>
+            </li>
+          `).join('');
+        }
+      }
+      if (s.parliamentName) {
+        const el = document.getElementById('profile-parliament-name');
+        if (el) el.textContent = s.parliamentName;
+      }
+      if (s.parliamentLogo !== undefined) {
+        const container = document.getElementById('parliament-logo-container');
+        if (container) {
+          if (s.parliamentLogo) {
+            container.innerHTML = `<img id="parliament-logo-img" src="${s.parliamentLogo}" alt="Logo Parlemen Berjalan" class="h-16 sm:h-20 max-w-[160px] object-contain drop-shadow-md" />`;
+          } else {
+            container.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-10 w-10 text-amber-300 animate-pulse"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`;
+          }
+        }
+      }
+      if (s.orgTitle) {
+        const el = document.getElementById('profile-org-title');
+        if (el) el.textContent = s.orgTitle;
+      }
+      if (s.orgSubtitle) {
+        const el = document.getElementById('profile-org-subtitle');
+        if (el) el.textContent = s.orgSubtitle;
+      }
+      if (s.orgBgImage) {
+        const el = document.getElementById('org-hero-bg');
+        if (el) (el as HTMLElement).style.backgroundImage = `url('${s.orgBgImage}')`;
+      }
+    }
+
     // ✅ Apply localStorage settings overrides on page load
     const cachedSettings = localStorage.getItem('dmfk_settings');
     if (cachedSettings) {
       try {
-        const s = JSON.parse(cachedSettings);
-        if (s.visi) {
-          const el = document.getElementById('profile-visi-text');
-          if (el) el.textContent = s.visi;
-        }
-        if (s.misi && Array.isArray(s.misi)) {
-          const ul = document.getElementById('profile-misi-list');
-          if (ul) {
-            ul.innerHTML = s.misi.map((item: string) => `
-              <li class="flex items-start gap-3">
-                <div class="bg-blue-100 p-1 rounded-full mt-1.5 shrink-0">
-                  <div class="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
-                </div>
-                <span class="text-gray-600 text-base font-medium leading-normal">${item}</span>
-              </li>
-            `).join('');
-          }
-        }
-        if (s.parliamentName) {
-          const el = document.getElementById('profile-parliament-name');
-          if (el) el.textContent = s.parliamentName;
-        }
-        if (s.orgTitle) {
-          const el = document.getElementById('profile-org-title');
-          if (el) el.textContent = s.orgTitle;
-        }
-        if (s.orgSubtitle) {
-          const el = document.getElementById('profile-org-subtitle');
-          if (el) el.textContent = s.orgSubtitle;
-        }
-        if (s.orgBgImage) {
-          const el = document.getElementById('org-hero-bg');
-          if (el) (el as HTMLElement).style.backgroundImage = `url('${s.orgBgImage}')`;
-        }
+        applyProfileSettingsToDOM(JSON.parse(cachedSettings));
       } catch (e) {}
     }
 
@@ -653,6 +665,7 @@ const org = siteSettings.orgStructure;
         const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
         const updated = { ...current, ...payload };
         localStorage.setItem('dmfk_settings', JSON.stringify(updated));
+        applyProfileSettingsToDOM(updated);
 
         await fetch('/api/settings', {
           method: 'POST',
@@ -674,49 +687,8 @@ const org = siteSettings.orgStructure;
           const serverSettings = resData.settings;
           const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
           const merged = { ...current, ...serverSettings };
-          const currentStr = localStorage.getItem('dmfk_settings');
-          const mergedStr = JSON.stringify(merged);
-          if (mergedStr !== currentStr) {
-            localStorage.setItem('dmfk_settings', mergedStr);
-            // Update Visi
-            if (merged.visi) {
-              const visiEl = document.getElementById('visi-text');
-              if (visiEl) visiEl.textContent = `"${merged.visi}"`;
-            }
-            // Update Misi
-            if (Array.isArray(merged.misi) && merged.misi.length > 0) {
-              const misiContainer = document.getElementById('misi-container');
-              if (misiContainer) {
-                misiContainer.innerHTML = merged.misi.map((m: string, i: number) => `
-                  <div class="flex items-start gap-4 p-5 rounded-2xl bg-gray-50/80 border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
-                    <span class="flex shrink-0 w-9 h-9 rounded-xl bg-rose-100 text-rose-700 font-extrabold flex items-center justify-center text-base group-hover:scale-110 transition-transform">0${i + 1}</span>
-                    <p class="text-gray-700 font-medium leading-relaxed my-auto text-base sm:text-lg">${m}</p>
-                  </div>
-                `).join('');
-              }
-            }
-            // Update Org Header
-            if (merged.parliamentName) {
-              const el = document.getElementById('parliament-name-text');
-              if (el) el.textContent = merged.parliamentName;
-            }
-            if (merged.parliamentLogo) {
-              const el = document.getElementById('parliament-logo-img') as HTMLImageElement | null;
-              if (el) el.src = merged.parliamentLogo;
-            }
-            if (merged.orgTitle) {
-              const el = document.getElementById('org-title-text');
-              if (el) el.textContent = merged.orgTitle;
-            }
-            if (merged.orgSubtitle) {
-              const el = document.getElementById('org-subtitle-text');
-              if (el) el.textContent = merged.orgSubtitle;
-            }
-            if (merged.orgBgUrl) {
-              const el = document.getElementById('org-bg-container');
-              if (el) el.style.backgroundImage = `url('${merged.orgBgUrl}')`;
-            }
-          }
+          localStorage.setItem('dmfk_settings', JSON.stringify(merged));
+          applyProfileSettingsToDOM(merged);
         }
       })
       .catch(() => {});
