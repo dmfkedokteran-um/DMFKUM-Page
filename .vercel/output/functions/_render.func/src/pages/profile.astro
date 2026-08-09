@@ -1,0 +1,1015 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Eye, Users, Edit, X, ShieldCheck, Award, UserCheck, Plus, Image } from 'lucide-astro';
+import fs from 'fs/promises';
+import path from 'path';
+
+// Enable Server-Side Rendering (SSR)
+export const prerender = false;
+
+// Default Org Structure fallback
+const DEFAULT_ORG_STRUCTURE = {
+  pembina: {
+    title: "Pembina Organisasi",
+    name: "Dr. Ahmad Subandi, M.Pd.",
+    nip: "NIP. 19820412 201012 1 004",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+  },
+  presidium: [
+    {
+      role: "Ketua Umum",
+      name: "Muhammad Farhan",
+      dept: "Kedokteran '23",
+      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      role: "Wakil Ketua",
+      name: "Nabila Putri",
+      dept: "Kedokteran '23",
+      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
+    }
+  ],
+  sekben: [
+    {
+      role: "Sekretaris Umum",
+      name: "Zahra Annisa",
+      dept: "Kebidanan '24",
+      avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80"
+    },
+    {
+      role: "Bendahara Umum",
+      name: "Dewa Saputra",
+      dept: "Kedokteran '23",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+    }
+  ],
+  komisi: [
+    {
+      id: "komisi-1",
+      code: "Komisi I",
+      title: "Advokasi & Aspirasi",
+      themeColor: "rose",
+      ketua: {
+        name: "Rizky Ramadhan",
+        dept: "S1 Kedokteran '23",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
+      },
+      anggota: [
+        { name: "Ahmad Fauzi", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" },
+        { name: "Siti Rahma", dept: "S1 Kebidanan '24", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80" },
+        { name: "Kevin Pratama", dept: "S1 Farmasi '24", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80" }
+      ]
+    },
+    {
+      id: "komisi-2",
+      code: "Komisi II",
+      title: "Legislasi & Regulasi",
+      themeColor: "blue",
+      ketua: {
+        name: "Amanda Clarissa",
+        dept: "S1 Kedokteran '23",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+      },
+      anggota: [
+        { name: "Diva Maharani", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80" },
+        { name: "Fajar Nugraha", dept: "S1 Farmasi '23", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80" },
+        { name: "Nabila Zalianty", dept: "S1 Kebidanan '24", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80" }
+      ]
+    },
+    {
+      id: "komisi-3",
+      code: "Komisi III",
+      title: "Pengawasan & Keuangan",
+      themeColor: "emerald",
+      ketua: {
+        name: "Bima Kusuma",
+        dept: "S1 Kedokteran '23",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+      },
+      anggota: [
+        { name: "Rina Wijaya", dept: "S1 Farmasi '24", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=150&q=80" },
+        { name: "Taufik Hidayat", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80" },
+        { name: "Gita Gutawa", dept: "S1 Kebidanan '23", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" }
+      ]
+    },
+    {
+      id: "komisi-4",
+      code: "Komisi IV",
+      title: "Humas & Informasi",
+      themeColor: "fuchsia",
+      ketua: {
+        name: "Citra Lestari",
+        dept: "S1 Kebidanan '23",
+        avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
+      },
+      anggota: [
+        { name: "Eko Prasetyo", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80" },
+        { name: "Maya Indah", dept: "S1 Farmasi '24", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80" },
+        { name: "Surya Pratama", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" }
+      ]
+    }
+  ]
+};
+
+// Load site settings (Visi, Misi, OrgBgImage, Parliament, OrgTitle, OrgSubtitle, & OrgStructure)
+const SETTINGS_DB = path.resolve(process.cwd(), 'database/settings.json');
+let siteSettings = {
+  orgBgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
+  parliamentName: "Parlemen Nawa Cita 2026",
+  parliamentLogo: "",
+  orgTitle: "Struktur Kepengurusan 2026",
+  orgSubtitle: "Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM",
+  visi: "Menjadi organisasi pelopor yang inovatif, transparan, dan berdampak nyata bagi pembangunan kapasitas masyarakat dan kemajuan keilmuan nasional pada tahun 2030.",
+  misi: [
+    "Mengembangkan program kerja berbasis riset & pengabdian.",
+    "Mewujudkan ekosistem administrasi transparan.",
+    "Menjalin kemitraan kolaboratif lintas sektor."
+  ],
+  orgStructure: DEFAULT_ORG_STRUCTURE
+};
+
+try {
+  const rawSettings = await fs.readFile(SETTINGS_DB, 'utf-8');
+  const parsed = JSON.parse(rawSettings);
+  siteSettings = {
+    ...siteSettings,
+    ...parsed,
+    orgStructure: parsed.orgStructure || DEFAULT_ORG_STRUCTURE
+  };
+} catch (e) {
+  // fallback default settings
+}
+
+const org = siteSettings.orgStructure;
+---
+
+<Layout title="Profil DMFK UM - Universitas Negeri Malang" description="Visi, Misi, dan Struktur Organisasi kepengurusan DMFK UM Universitas Negeri Malang.">
+  <div class="py-12 px-4 max-w-7xl mx-auto animate-fade-in pb-20">
+    <div class="text-center mb-10">
+      <span class="text-rose-600 font-bold tracking-wider uppercase text-xs mb-2 block animate-pulse">Tentang Kami</span>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">Identitas & Tujuan</h1>
+      <p class="text-gray-500 max-w-xl mx-auto text-base leading-relaxed mb-5">Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.</p>
+
+      {/* Admin Edit Visi & Misi Button */}
+      <button 
+        id="edit-profile-btn"
+        class="admin-only hidden inline-flex items-center gap-2 bg-rose-600 text-white px-5 py-2.5 rounded-full font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-600/20 text-sm cursor-pointer outline-none"
+      >
+        <Edit class="h-4 w-4" /> Edit Visi & Misi
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+      {/* Visi */}
+      <div class="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100 hover:shadow-md transition-all">
+        <div class="bg-rose-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+          <Eye class="h-6 w-6 text-rose-600" />
+        </div>
+        <h2 class="text-2xl font-extrabold text-gray-900 mb-3">Visi Utama</h2>
+        <p class="text-gray-600 text-base leading-relaxed font-medium">
+          {siteSettings.visi}
+        </p>
+      </div>
+      
+      {/* Misi */}
+      <div class="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100 hover:shadow-md transition-all">
+        <div class="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+          <Users class="h-6 w-6 text-blue-600" />
+        </div>
+        <h2 class="text-2xl font-extrabold text-gray-900 mb-3">Misi Strategis</h2>
+        <ul class="space-y-3">
+          {siteSettings.misi.map((item) => (
+            <li class="flex items-start gap-3">
+              <div class="bg-blue-100 p-1 rounded-full mt-1.5 shrink-0">
+                <div class="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+              </div>
+              <span class="text-gray-600 text-base font-medium leading-normal">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    {/* Dedicated Hero Section Banner Header for Org Structure & Active Parliament */}
+    <section class="relative overflow-hidden bg-gradient-to-br from-rose-900 via-rose-800 to-rose-950 text-white py-14 px-6 text-center rounded-[3rem] shadow-2xl shadow-rose-900/20 mb-12">
+      {/* Photo Background Overlay */}
+      <div 
+        id="org-hero-bg" 
+        class="absolute inset-0 w-full h-full bg-cover bg-center opacity-25 mix-blend-luminosity pointer-events-none transition-all duration-700" 
+        style={`background-image: url('${siteSettings.orgBgImage}')`}
+      ></div>
+
+      {/* Admin Edit Hero Background Image & Parliament Button */}
+      <button 
+        id="edit-org-bg-btn" 
+        class="admin-only hidden absolute top-6 right-6 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md text-gray-900 px-4 py-2 rounded-full font-bold text-xs hover:bg-white hover:scale-105 transition-all shadow-lg cursor-pointer outline-none"
+      >
+        <Edit class="h-3.5 w-3.5 text-rose-600" /> Edit Banner & Parlemen
+      </button>
+
+      {/* Decorative Blur Orbs */}
+      <div class="absolute top-0 left-10 w-64 h-64 bg-white/5 rounded-full mix-blend-overlay filter blur-3xl opacity-50 pointer-events-none"></div>
+      <div class="absolute bottom-0 right-10 w-80 h-80 bg-red-500/20 rounded-full mix-blend-overlay filter blur-3xl opacity-50 pointer-events-none"></div>
+
+      <div class="relative max-w-3xl mx-auto z-10 flex flex-col items-center">
+        
+        {/* Ruang Logo Parlemen Berjalan */}
+        {siteSettings.parliamentLogo ? (
+          <div class="mb-4 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-xl hover:scale-105 transition-transform">
+            <img src={siteSettings.parliamentLogo} alt="Logo Parlemen Berjalan" class="h-16 sm:h-20 max-w-[160px] object-contain drop-shadow-md" />
+          </div>
+        ) : (
+          <div class="mb-3 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-xl flex items-center justify-center">
+            <Award class="h-10 w-10 text-amber-300 animate-pulse" />
+          </div>
+        )}
+
+        {/* Highlighted Badge Nama Parlemen Berjalan */}
+        <div class="inline-flex items-center gap-2 py-1.5 px-5 rounded-full bg-gradient-to-r from-rose-500/30 via-amber-500/25 to-rose-500/30 backdrop-blur-md border border-amber-300/40 text-amber-200 text-xs font-extrabold mb-3 tracking-wider uppercase shadow-lg shadow-amber-500/10">
+          <Award class="h-4 w-4 text-amber-300 shrink-0" />
+          <span>{siteSettings.parliamentName || 'Parlemen Nawa Cita 2026'}</span>
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl font-extrabold mb-3 leading-tight tracking-tight">{siteSettings.orgTitle || 'Struktur Kepengurusan 2026'}</h2>
+        <p class="text-base sm:text-lg text-rose-100/90 max-w-xl mx-auto font-light leading-relaxed">
+          {siteSettings.orgSubtitle || 'Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM'}
+        </p>
+
+        {/* Admin Manage Org Structure Button */}
+        <button 
+          id="edit-org-btn" 
+          class="admin-only hidden mt-6 inline-flex items-center gap-2 bg-white text-rose-900 font-bold px-5 py-2.5 rounded-full text-xs shadow-lg hover:scale-105 transition-all cursor-pointer outline-none"
+        >
+          <Edit class="h-4 w-4 text-rose-600" /> Kelola Susunan Pengurus & Komisi
+        </button>
+      </div>
+    </section>
+
+    {/* Dynamic Org Chart Content */}
+    <section class="bg-white p-6 sm:p-10 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden">
+      <div class="flex flex-col items-center space-y-8">
+        
+        {/* Tier 1: Pembina */}
+        {org.pembina && (
+          <div class="flex flex-col items-center">
+            <div class="bg-gradient-to-r from-gray-50 to-rose-50/40 px-5 py-3.5 rounded-2xl border border-gray-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition-all">
+              <img src={org.pembina.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'} alt="Pembina" class="w-11 h-11 object-cover rounded-full ring-2 ring-rose-200 shrink-0" />
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 block">{org.pembina.title || 'Pembina Organisasi'}</span>
+                <h4 class="font-extrabold text-gray-900 text-sm leading-tight">{org.pembina.name}</h4>
+                <p class="text-[10px] text-gray-400 font-medium mt-0.5">{org.pembina.nip}</p>
+              </div>
+            </div>
+            <div class="w-0.5 h-6 bg-rose-300"></div>
+          </div>
+        )}
+
+        {/* Tier 2: Presidium (Ketua Umum / Wakil Ketua - Dynamic Row) */}
+        {org.presidium && org.presidium.length > 0 && (
+          <div class="flex flex-col items-center w-full max-w-4xl">
+            <div class="flex flex-wrap justify-center gap-4 w-full">
+              {org.presidium.map(pres => (
+                <div class="bg-gradient-to-br from-rose-900 to-rose-950 text-white p-4 rounded-2xl shadow-md flex items-center gap-3.5 border border-rose-800 min-w-[240px] max-w-[280px] flex-1">
+                  <img src={pres.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80'} alt={pres.role} class="w-12 h-12 object-cover rounded-full ring-2 ring-white/20 shrink-0" />
+                  <div class="overflow-hidden">
+                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-rose-200 bg-white/10 px-2 py-0.5 rounded truncate block w-fit">{pres.role}</span>
+                    <h4 class="font-extrabold text-white text-sm mt-1 truncate">{pres.name}</h4>
+                    <p class="text-[10px] text-rose-200/80 font-medium truncate">{pres.dept}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div class="w-0.5 h-6 bg-gray-300 mt-4"></div>
+          </div>
+        )}
+
+        {/* Tier 3: Sekretaris & Bendahara - Dynamic Row */}
+        {org.sekben && org.sekben.length > 0 && (
+          <div class="flex flex-col items-center w-full max-w-4xl">
+            <div class="flex flex-wrap justify-center gap-4 w-full">
+              {org.sekben.map(sb => (
+                <div class="bg-gray-50/80 p-3.5 rounded-2xl border border-gray-200/60 flex items-center gap-3 min-w-[220px] max-w-[260px] flex-1">
+                  <img src={sb.avatar || 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80'} alt={sb.role} class="w-10 h-10 object-cover rounded-xl shrink-0" />
+                  <div class="overflow-hidden">
+                    <span class="text-[9px] font-extrabold uppercase tracking-wider text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-100 truncate block w-fit">{sb.role}</span>
+                    <h4 class="font-extrabold text-gray-900 text-xs mt-1 truncate">{sb.name}</h4>
+                    <p class="text-[10px] text-gray-400 font-medium truncate">{sb.dept}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div class="w-0.5 h-8 bg-gray-300 mt-4"></div>
+          </div>
+        )}
+
+        {/* Tier 4: Komisi Section (Dynamic Grid with Downward Member Profiles) */}
+        {org.komisi && org.komisi.length > 0 && (
+          <div class="w-full">
+            <div class="text-center mb-6">
+              <span class="text-[11px] font-extrabold uppercase tracking-widest text-rose-600 bg-rose-50 px-4 py-1 rounded-full border border-rose-100">
+                Komisi & Keanggotaan ({org.komisi.length} Komisi)
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 w-full items-start">
+              {org.komisi.map(kom => (
+                <div class="bg-gray-50/50 rounded-2xl p-4 border border-gray-200/70 flex flex-col space-y-4">
+                  
+                  {/* Header Komisi */}
+                  <div class="text-center pb-3 border-b border-gray-200/60">
+                    <span class={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md ${
+                      kom.themeColor === 'blue' ? 'bg-blue-100 text-blue-700' :
+                      kom.themeColor === 'emerald' ? 'bg-emerald-100 text-emerald-700' :
+                      kom.themeColor === 'fuchsia' ? 'bg-fuchsia-100 text-fuchsia-700' :
+                      'bg-rose-100 text-rose-700'
+                    }`}>
+                      {kom.code}
+                    </span>
+                    <h3 class="font-extrabold text-gray-900 text-sm mt-1.5 leading-snug">{kom.title}</h3>
+                  </div>
+
+                  {/* Profil Ketua Komisi */}
+                  {kom.ketua && (
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex items-center gap-3">
+                      <img src={kom.ketua.avatar || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80'} alt={kom.ketua.name} class="w-10 h-10 object-cover rounded-full ring-2 ring-rose-400 shrink-0" />
+                      <div class="overflow-hidden">
+                        <span class="text-[8px] font-extrabold uppercase tracking-widest text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">Ketua Komisi</span>
+                        <h4 class="font-extrabold text-gray-900 text-xs truncate mt-0.5">{kom.ketua.name}</h4>
+                        <p class="text-[10px] text-gray-400 font-medium truncate">{kom.ketua.dept}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Downward Line */}
+                  <div class="w-0.5 h-3 bg-gray-300 mx-auto"></div>
+
+                  {/* Profil Anggota Komisi (Kebawah) */}
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-gray-400 mb-1 px-1">
+                      <span class="flex items-center gap-1">
+                        <UserCheck class="h-3 w-3 text-gray-400" />
+                        <span>Anggota Komisi</span>
+                      </span>
+                      <span>({kom.anggota ? kom.anggota.length : 0})</span>
+                    </div>
+
+                    {kom.anggota && kom.anggota.map(mem => (
+                      <div class="bg-white p-2.5 rounded-xl border border-gray-100 flex items-center gap-2.5 hover:border-gray-200 transition-colors">
+                        <img src={mem.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80'} alt={mem.name} class="w-8 h-8 object-cover rounded-full shrink-0" />
+                        <div class="overflow-hidden">
+                          <h5 class="font-bold text-gray-800 text-[11px] truncate leading-tight">{mem.name}</h5>
+                          <p class="text-[9px] text-gray-400 font-medium truncate">{mem.dept}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </section>
+
+    {/* Admin Modal Edit Visi & Misi */}
+    <dialog 
+      id="profile-modal" 
+      closedby="any"
+      class="fixed inset-0 bg-transparent p-4 border-none outline-none open:flex justify-center items-center backdrop:bg-gray-900/80 backdrop:backdrop-blur-sm"
+    >
+      <div class="bg-white w-full max-w-xl rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">Edit Visi & Misi</h2>
+            <p class="text-sm font-medium text-gray-500 mt-1">Perbarui visi dan poin-poin misi organisasi.</p>
+          </div>
+          <button id="close-profile-modal-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <form id="profile-form" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Visi Utama</label>
+            <textarea 
+              required 
+              id="visi-input"
+              rows="3"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            >{siteSettings.visi}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Misi Strategis (Satu poin per baris)</label>
+            <textarea 
+              required 
+              id="misi-input"
+              rows="5"
+              placeholder="Poin 1&#10;Poin 2&#10;Poin 3"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            >{siteSettings.misi.join('\n')}</textarea>
+          </div>
+          
+          <button type="submit" class="w-full mt-4 py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-base cursor-pointer">
+            Simpan Visi & Misi
+          </button>
+        </form>
+      </div>
+    </dialog>
+
+    {/* Admin Modal Edit Banner Header & Parlemen */}
+    <dialog 
+      id="org-bg-modal" 
+      closedby="any"
+      class="fixed inset-0 bg-transparent p-4 border-none outline-none open:flex justify-center items-center backdrop:bg-gray-900/80 backdrop:backdrop-blur-sm z-50"
+    >
+      <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">Edit Banner & Parlemen</h2>
+            <p class="text-sm font-medium text-gray-500 mt-1">Ubah nama parlemen, logo parlemen, judul, dan background header.</p>
+          </div>
+          <button id="close-org-bg-modal-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <form id="org-bg-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Nama Parlemen Berjalan</label>
+            <input 
+              type="text" 
+              id="parliament-name-input"
+              value={siteSettings.parliamentName || 'Parlemen Nawa Cita 2026'}
+              placeholder="e.g. Parlemen Nawa Cita 2026" 
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            />
+          </div>
+
+          <div class="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-2">
+            <label class="block text-xs font-extrabold text-amber-900">Logo Parlemen Berjalan</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input 
+                type="text" 
+                id="parliament-logo-url-input"
+                value={siteSettings.parliamentLogo || ''}
+                placeholder="URL Logo Parlemen" 
+                class="w-full px-3 py-2 bg-white border border-amber-200 rounded-xl text-xs font-medium text-gray-800"
+              />
+              <input 
+                type="file" 
+                id="parliament-logo-file-input" 
+                accept="image/*"
+                class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Judul Banner Header</label>
+            <input 
+              type="text" 
+              id="org-title-input"
+              value={siteSettings.orgTitle || 'Struktur Kepengurusan 2026'}
+              placeholder="e.g. Struktur Kepengurusan 2026" 
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Sub-judul / Deskripsi Banner</label>
+            <textarea 
+              id="org-subtitle-input"
+              rows="2"
+              placeholder="e.g. Pimpinan Utama, BPH, dan Komisi Operasional..." 
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            >{siteSettings.orgSubtitle || 'Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM'}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Background Header Foto (Upload / URL)</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input 
+                type="text" 
+                id="org-bg-url-input"
+                value={siteSettings.orgBgImage || ''}
+                placeholder="https://..." 
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800"
+              />
+              <input 
+                type="file" 
+                id="org-bg-file-input" 
+                accept="image/*"
+                class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 cursor-pointer"
+              />
+            </div>
+          </div>
+          
+          <button type="submit" class="w-full mt-4 py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-base cursor-pointer">
+            Simpan Banner & Parlemen
+          </button>
+        </form>
+      </div>
+    </dialog>
+
+    {/* Admin Modal Kelola Bagan Organisasi (Full Edit with Pembina & Photo Uploads) */}
+    <dialog 
+      id="org-modal" 
+      closedby="any"
+      class="fixed inset-0 bg-transparent p-4 border-none outline-none open:flex justify-center items-center backdrop:bg-gray-900/80 backdrop:backdrop-blur-sm z-50"
+    >
+      <div class="bg-white w-full max-w-3xl rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-2xl font-extrabold text-gray-900">Kelola Bagan Organisasi & Foto Personil</h2>
+            <p class="text-sm font-medium text-gray-500 mt-1">Ubah Pembina, Presidium, BPH, dan Komisi beserta foto/avatar tiap personil.</p>
+          </div>
+          <button id="close-org-modal-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <form id="org-form" class="space-y-8" data-org={JSON.stringify(org)}>
+          {/* Section 0: Pembina Organisasi */}
+          <div class="bg-rose-50/50 p-5 rounded-2xl border border-rose-200/80 space-y-3">
+            <h3 class="font-extrabold text-rose-900 text-base">Pembina Organisasi</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input type="text" id="pembina-title" value={org.pembina?.title || 'Pembina Organisasi'} placeholder="Sebutan (Pembina)" class="font-bold text-xs p-2.5 bg-white border rounded-xl" />
+              <input type="text" id="pembina-name" value={org.pembina?.name || ''} placeholder="Nama Lengkap & Gelar" class="font-bold text-xs p-2.5 bg-white border rounded-xl" />
+              <input type="text" id="pembina-nip" value={org.pembina?.nip || ''} placeholder="NIP / Identitas" class="text-xs p-2.5 bg-white border rounded-xl" />
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+              <input type="text" id="pembina-avatar" value={org.pembina?.avatar || ''} placeholder="URL Foto Pembina" class="text-xs p-2.5 bg-white border rounded-xl" />
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-gray-500 shrink-0">Upload Foto:</span>
+                <input type="file" id="pembina-file" accept="image/*" class="text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700 cursor-pointer" />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 1: Presidium (Ketua / Wakil) */}
+          <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200/80">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-extrabold text-gray-900 text-base">Presidium (Ketua / Wakil)</h3>
+              <button type="button" id="add-presidium-btn" class="text-xs font-bold bg-rose-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-rose-700 transition-colors">
+                <Plus class="h-3.5 w-3.5" /> Tambah Presidium
+              </button>
+            </div>
+            <div id="presidium-inputs-container" class="space-y-4"></div>
+          </div>
+
+          {/* Section 2: SekBen (Sekretaris & Bendahara) */}
+          <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200/80">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-extrabold text-gray-900 text-base">Pengurus BPH (Sekretaris / Bendahara)</h3>
+              <button type="button" id="add-sekben-btn" class="text-xs font-bold bg-rose-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-rose-700 transition-colors">
+                <Plus class="h-3.5 w-3.5" /> Tambah Sekretaris/Bendahara
+              </button>
+            </div>
+            <div id="sekben-inputs-container" class="space-y-4"></div>
+          </div>
+
+          {/* Section 3: Komisi & Anggota */}
+          <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200/80">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-extrabold text-gray-900 text-base">Daftar Komisi & Keanggotaan</h3>
+              <button type="button" id="add-komisi-btn" class="text-xs font-bold bg-rose-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-rose-700 transition-colors">
+                <Plus class="h-3.5 w-3.5" /> Tambah Komisi Baru
+              </button>
+            </div>
+            <div id="komisi-inputs-container" class="space-y-6"></div>
+          </div>
+
+          <button type="submit" class="w-full py-4 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-base cursor-pointer">
+            Simpan Seluruh Perubahan Bagan Organisasi & Foto
+          </button>
+        </form>
+      </div>
+    </dialog>
+
+  </div>
+</Layout>
+
+<script>
+  function setupProfileAdmin() {
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+    // Show/Hide Admin Edit Controls
+    const adminControls = document.querySelectorAll('.admin-only');
+    adminControls.forEach(el => {
+      if (isAdmin) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    });
+
+    // 1. Edit Visi & Misi Modal
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const profileModal = document.getElementById('profile-modal') as HTMLDialogElement | null;
+    const closeProfileModalBtn = document.getElementById('close-profile-modal-btn');
+    const profileForm = document.getElementById('profile-form') as HTMLFormElement | null;
+
+    if (editProfileBtn && profileModal) {
+      editProfileBtn.addEventListener('click', () => profileModal.showModal());
+    }
+    if (closeProfileModalBtn && profileModal) {
+      closeProfileModalBtn.addEventListener('click', () => profileModal.close());
+    }
+
+    if (profileForm && profileModal) {
+      profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const visiVal = (document.getElementById('visi-input') as HTMLTextAreaElement).value.trim();
+        const misiRaw = (document.getElementById('misi-input') as HTMLTextAreaElement).value;
+        const misiArray = misiRaw.split('\n').map(m => m.trim()).filter(m => m);
+
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            visi: visiVal,
+            misi: misiArray
+          })
+        });
+
+        if (res.ok) {
+          profileModal.close();
+          window.location.reload();
+        } else {
+          alert('Gagal menyimpan Visi & Misi ke server.');
+        }
+      });
+    }
+
+    // Helper for async File Upload to /api/upload
+    async function uploadFileIfSelected(fileInput: HTMLInputElement | null, defaultUrl: string): Promise<string> {
+      const file = fileInput?.files?.[0];
+      if (!file) return defaultUrl;
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (res.ok) {
+          const json = await res.json();
+          return json.fileUrl || defaultUrl;
+        }
+      } catch (err) {
+        console.error("File upload failed", err);
+      }
+      return defaultUrl;
+    }
+
+    // 2. Org Structure Header Background & Parliament Modal
+    const editOrgBgBtn = document.getElementById('edit-org-bg-btn');
+    const orgBgModal = document.getElementById('org-bg-modal') as HTMLDialogElement | null;
+    const closeOrgBgModalBtn = document.getElementById('close-org-bg-modal-btn');
+    const orgBgForm = document.getElementById('org-bg-form') as HTMLFormElement | null;
+
+    if (editOrgBgBtn && orgBgModal) {
+      editOrgBgBtn.addEventListener('click', () => orgBgModal.showModal());
+    }
+    if (closeOrgBgModalBtn && orgBgModal) {
+      closeOrgBgModalBtn.addEventListener('click', () => orgBgModal.close());
+    }
+
+    if (orgBgForm && orgBgModal) {
+      orgBgForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const parliamentNameVal = (document.getElementById('parliament-name-input') as HTMLInputElement)?.value.trim();
+        const parliamentLogoUrlInput = (document.getElementById('parliament-logo-url-input') as HTMLInputElement)?.value.trim();
+        const parliamentLogoFileInput = document.getElementById('parliament-logo-file-input') as HTMLInputElement | null;
+        
+        const finalParliamentLogo = await uploadFileIfSelected(parliamentLogoFileInput, parliamentLogoUrlInput);
+
+        const titleVal = (document.getElementById('org-title-input') as HTMLInputElement)?.value.trim();
+        const subtitleVal = (document.getElementById('org-subtitle-input') as HTMLTextAreaElement)?.value.trim();
+        const urlInput = (document.getElementById('org-bg-url-input') as HTMLInputElement)?.value.trim();
+        const fileInput = document.getElementById('org-bg-file-input') as HTMLInputElement | null;
+        
+        const finalBgUrl = await uploadFileIfSelected(fileInput, urlInput);
+
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            parliamentName: parliamentNameVal || 'Parlemen Nawa Cita 2026',
+            parliamentLogo: finalParliamentLogo,
+            orgTitle: titleVal || 'Struktur Kepengurusan 2026',
+            orgSubtitle: subtitleVal || 'Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM',
+            orgBgImage: finalBgUrl 
+          })
+        });
+
+        if (res.ok) {
+          orgBgModal.close();
+          window.location.reload();
+        } else {
+          alert('Gagal menyimpan banner & parlemen.');
+        }
+      });
+    }
+
+    // 3. Dynamic Org Structure Editor Modal
+    const editOrgBtn = document.getElementById('edit-org-btn');
+    const orgModal = document.getElementById('org-modal') as HTMLDialogElement | null;
+    const closeOrgModalBtn = document.getElementById('close-org-modal-btn');
+    const orgForm = document.getElementById('org-form') as HTMLFormElement | null;
+
+    if (editOrgBtn && orgModal) {
+      editOrgBtn.addEventListener('click', () => {
+        renderOrgFormInputs();
+        orgModal.showModal();
+      });
+    }
+    if (closeOrgModalBtn && orgModal) {
+      closeOrgModalBtn.addEventListener('click', () => orgModal.close());
+    }
+
+    // Data State for Modal
+    let localOrgData = orgForm ? JSON.parse(orgForm.getAttribute('data-org') || '{}') : {};
+
+    function renderOrgFormInputs() {
+      if (!orgForm) return;
+
+      // Presidium Render
+      const presContainer = document.getElementById('presidium-inputs-container');
+      if (presContainer) {
+        presContainer.innerHTML = (localOrgData.presidium || []).map((p: any, idx: number) => `
+          <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-2">
+            <div class="flex items-center gap-2">
+              <input type="text" value="${p.role || ''}" placeholder="Jabatan (e.g. Ketua Umum)" class="pres-role font-bold text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <input type="text" value="${p.name || ''}" placeholder="Nama Lengkap" class="pres-name font-bold text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <input type="text" value="${p.dept || ''}" placeholder="Prodi / Angkatan" class="pres-dept text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <button type="button" onclick="removePresidiumItem(${idx})" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold">✕</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" value="${p.avatar || ''}" placeholder="URL Foto Personil" class="pres-avatar text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <input type="file" class="pres-file text-[11px] text-gray-500 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-200 cursor-pointer" accept="image/*" />
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // SekBen Render
+      const sekbenContainer = document.getElementById('sekben-inputs-container');
+      if (sekbenContainer) {
+        sekbenContainer.innerHTML = (localOrgData.sekben || []).map((sb: any, idx: number) => `
+          <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-2">
+            <div class="flex items-center gap-2">
+              <input type="text" value="${sb.role || ''}" placeholder="Jabatan (e.g. Bendahara)" class="sb-role font-bold text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <input type="text" value="${sb.name || ''}" placeholder="Nama Lengkap" class="sb-name font-bold text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <input type="text" value="${sb.dept || ''}" placeholder="Prodi / Angkatan" class="sb-dept text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <button type="button" onclick="removeSekbenItem(${idx})" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold">✕</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" value="${sb.avatar || ''}" placeholder="URL Foto Personil" class="sb-avatar text-xs p-2 bg-gray-50 border rounded-lg flex-1" />
+              <input type="file" class="sb-file text-[11px] text-gray-500 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-200 cursor-pointer" accept="image/*" />
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Komisi Render
+      const komisiContainer = document.getElementById('komisi-inputs-container');
+      if (komisiContainer) {
+        komisiContainer.innerHTML = (localOrgData.komisi || []).map((kom: any, kIdx: number) => `
+          <div class="bg-white p-4 rounded-xl border border-gray-300 space-y-3">
+            <div class="flex justify-between items-center bg-rose-50/50 p-2 rounded-lg">
+              <span class="font-extrabold text-xs text-rose-700">${kom.code || 'Komisi'}</span>
+              <button type="button" onclick="removeKomisiItem(${kIdx})" class="text-xs text-rose-600 font-bold hover:underline">Hapus Komisi</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" value="${kom.code || ''}" placeholder="Kode (e.g. Komisi I)" class="kom-code font-bold text-xs p-2 bg-gray-50 border rounded-lg" />
+              <input type="text" value="${kom.title || ''}" placeholder="Nama Komisi" class="kom-title font-bold text-xs p-2 bg-gray-50 border rounded-lg" />
+            </div>
+
+            <!-- Ketua Komisi -->
+            <div class="p-2.5 bg-gray-50 rounded-lg border space-y-2">
+              <span class="text-[10px] font-bold text-gray-500 block">Ketua Komisi</span>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" value="${kom.ketua?.name || ''}" placeholder="Nama Ketua Komisi" class="kom-ketua-name font-bold text-xs p-2 bg-white border rounded-lg" />
+                <input type="text" value="${kom.ketua?.dept || ''}" placeholder="Prodi / Angkatan" class="kom-ketua-dept text-xs p-2 bg-white border rounded-lg" />
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="text" value="${kom.ketua?.avatar || ''}" placeholder="URL Foto Ketua Komisi" class="kom-ketua-avatar text-xs p-2 bg-white border rounded-lg flex-1" />
+                <input type="file" class="kom-ketua-file text-[11px] text-gray-500 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-200 cursor-pointer" accept="image/*" />
+              </div>
+            </div>
+
+            <!-- Anggota Komisi -->
+            <div class="p-2.5 bg-gray-50/80 rounded-lg border space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold text-gray-500">Daftar Anggota Komisi</span>
+                <button type="button" onclick="addAnggotaItem(${kIdx})" class="text-[10px] font-bold bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded">+ Tambah Anggota</button>
+              </div>
+              <div class="space-y-2">
+                ${(kom.anggota || []).map((m: any, aIdx: number) => `
+                  <div class="p-2 bg-white rounded-lg border border-gray-200 space-y-1">
+                    <div class="flex gap-2 items-center">
+                      <input type="text" value="${m.name || ''}" placeholder="Nama Anggota" class="kom-mem-name font-bold text-xs p-1.5 bg-gray-50 border rounded-lg flex-1" />
+                      <input type="text" value="${m.dept || ''}" placeholder="Prodi / Angkatan" class="kom-mem-dept text-xs p-1.5 bg-gray-50 border rounded-lg flex-1" />
+                      <button type="button" onclick="removeAnggotaItem(${kIdx}, ${aIdx})" class="text-rose-600 text-xs px-1 font-bold">✕</button>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                      <input type="text" value="${m.avatar || ''}" placeholder="URL Foto Anggota" class="kom-mem-avatar text-[11px] p-1.5 bg-gray-50 border rounded-lg flex-1" />
+                      <input type="file" class="kom-mem-file text-[10px] text-gray-500 file:py-0.5 file:px-2 file:rounded file:border-0 file:bg-gray-200 cursor-pointer" accept="image/*" />
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Global helper functions attached to window for modal buttons
+    (window as any).removePresidiumItem = (idx: number) => {
+      localOrgData.presidium.splice(idx, 1);
+      renderOrgFormInputs();
+    };
+
+    (window as any).removeSekbenItem = (idx: number) => {
+      localOrgData.sekben.splice(idx, 1);
+      renderOrgFormInputs();
+    };
+
+    (window as any).removeKomisiItem = (idx: number) => {
+      localOrgData.komisi.splice(idx, 1);
+      renderOrgFormInputs();
+    };
+
+    (window as any).addAnggotaItem = (kIdx: number) => {
+      if (!localOrgData.komisi[kIdx].anggota) localOrgData.komisi[kIdx].anggota = [];
+      localOrgData.komisi[kIdx].anggota.push({ name: '', dept: '', avatar: '' });
+      renderOrgFormInputs();
+    };
+
+    (window as any).removeAnggotaItem = (kIdx: number, aIdx: number) => {
+      localOrgData.komisi[kIdx].anggota.splice(aIdx, 1);
+      renderOrgFormInputs();
+    };
+
+    // Add buttons handlers
+    document.getElementById('add-presidium-btn')?.addEventListener('click', () => {
+      if (!localOrgData.presidium) localOrgData.presidium = [];
+      localOrgData.presidium.push({ role: 'Wakil Ketua', name: '', dept: '', avatar: '' });
+      renderOrgFormInputs();
+    });
+
+    document.getElementById('add-sekben-btn')?.addEventListener('click', () => {
+      if (!localOrgData.sekben) localOrgData.sekben = [];
+      localOrgData.sekben.push({ role: 'Sekretaris', name: '', dept: '', avatar: '' });
+      renderOrgFormInputs();
+    });
+
+    document.getElementById('add-komisi-btn')?.addEventListener('click', () => {
+      if (!localOrgData.komisi) localOrgData.komisi = [];
+      const num = localOrgData.komisi.length + 1;
+      localOrgData.komisi.push({
+        id: `komisi-${num}`,
+        code: `Komisi ${num}`,
+        title: `Komisi Baru ${num}`,
+        themeColor: num % 2 === 0 ? 'blue' : 'rose',
+        ketua: { name: '', dept: '', avatar: '' },
+        anggota: [{ name: '', dept: '', avatar: '' }]
+      });
+      renderOrgFormInputs();
+    });
+
+    // Form Submit Handler for Org Structure with Photo Upload Processing
+    if (orgForm && orgModal) {
+      orgForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // 0. Process Pembina Photo Upload
+        const pembinaTitle = (document.getElementById('pembina-title') as HTMLInputElement)?.value.trim() || 'Pembina Organisasi';
+        const pembinaName = (document.getElementById('pembina-name') as HTMLInputElement)?.value.trim() || '';
+        const pembinaNip = (document.getElementById('pembina-nip') as HTMLInputElement)?.value.trim() || '';
+        const pembinaAvatarInput = (document.getElementById('pembina-avatar') as HTMLInputElement)?.value.trim() || '';
+        const pembinaFileInput = document.getElementById('pembina-file') as HTMLInputElement | null;
+        const pembinaAvatar = await uploadFileIfSelected(pembinaFileInput, pembinaAvatarInput || localOrgData.pembina?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80');
+
+        const updatedPembina = {
+          title: pembinaTitle,
+          name: pembinaName,
+          nip: pembinaNip,
+          avatar: pembinaAvatar
+        };
+
+        // 1. Process Presidium (Ketua / Wakil)
+        const presRoles = orgForm.querySelectorAll('.pres-role') as NodeListOf<HTMLInputElement>;
+        const presNames = orgForm.querySelectorAll('.pres-name') as NodeListOf<HTMLInputElement>;
+        const presDepts = orgForm.querySelectorAll('.pres-dept') as NodeListOf<HTMLInputElement>;
+        const presAvatars = orgForm.querySelectorAll('.pres-avatar') as NodeListOf<HTMLInputElement>;
+        const presFiles = orgForm.querySelectorAll('.pres-file') as NodeListOf<HTMLInputElement>;
+        
+        const updatedPresidium: any[] = [];
+        for (let idx = 0; idx < presRoles.length; idx++) {
+          if (presNames[idx]?.value.trim()) {
+            const avatarUrl = await uploadFileIfSelected(presFiles[idx], presAvatars[idx]?.value.trim() || localOrgData.presidium?.[idx]?.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80');
+            updatedPresidium.push({
+              role: presRoles[idx].value.trim(),
+              name: presNames[idx].value.trim(),
+              dept: presDepts[idx]?.value.trim() || '',
+              avatar: avatarUrl
+            });
+          }
+        }
+
+        // 2. Process Sekben (Sekretaris / Bendahara)
+        const sbRoles = orgForm.querySelectorAll('.sb-role') as NodeListOf<HTMLInputElement>;
+        const sbNames = orgForm.querySelectorAll('.sb-name') as NodeListOf<HTMLInputElement>;
+        const sbDepts = orgForm.querySelectorAll('.sb-dept') as NodeListOf<HTMLInputElement>;
+        const sbAvatars = orgForm.querySelectorAll('.sb-avatar') as NodeListOf<HTMLInputElement>;
+        const sbFiles = orgForm.querySelectorAll('.sb-file') as NodeListOf<HTMLInputElement>;
+
+        const updatedSekben: any[] = [];
+        for (let idx = 0; idx < sbRoles.length; idx++) {
+          if (sbNames[idx]?.value.trim()) {
+            const avatarUrl = await uploadFileIfSelected(sbFiles[idx], sbAvatars[idx]?.value.trim() || localOrgData.sekben?.[idx]?.avatar || 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80');
+            updatedSekben.push({
+              role: sbRoles[idx].value.trim(),
+              name: sbNames[idx].value.trim(),
+              dept: sbDepts[idx]?.value.trim() || '',
+              avatar: avatarUrl
+            });
+          }
+        }
+
+        // 3. Process Komisi
+        const komCodes = orgForm.querySelectorAll('.kom-code') as NodeListOf<HTMLInputElement>;
+        const komTitles = orgForm.querySelectorAll('.kom-title') as NodeListOf<HTMLInputElement>;
+        const komKetuaNames = orgForm.querySelectorAll('.kom-ketua-name') as NodeListOf<HTMLInputElement>;
+        const komKetuaDepts = orgForm.querySelectorAll('.kom-ketua-dept') as NodeListOf<HTMLInputElement>;
+        const komKetuaAvatars = orgForm.querySelectorAll('.kom-ketua-avatar') as NodeListOf<HTMLInputElement>;
+        const komKetuaFiles = orgForm.querySelectorAll('.kom-ketua-file') as NodeListOf<HTMLInputElement>;
+        
+        const updatedKomisi: any[] = [];
+        for (let kIdx = 0; kIdx < komCodes.length; kIdx++) {
+          const komCard = komCodes[kIdx].closest('.bg-white');
+          const memNames = komCard?.querySelectorAll('.kom-mem-name') as NodeListOf<HTMLInputElement>;
+          const memDepts = komCard?.querySelectorAll('.kom-mem-dept') as NodeListOf<HTMLInputElement>;
+          const memAvatars = komCard?.querySelectorAll('.kom-mem-avatar') as NodeListOf<HTMLInputElement>;
+          const memFiles = komCard?.querySelectorAll('.kom-mem-file') as NodeListOf<HTMLInputElement>;
+
+          const ketuaAvatarUrl = await uploadFileIfSelected(komKetuaFiles[kIdx], komKetuaAvatars[kIdx]?.value.trim() || localOrgData.komisi?.[kIdx]?.ketua?.avatar || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80');
+          
+          const anggotaList: any[] = [];
+          if (memNames) {
+            for (let aIdx = 0; aIdx < memNames.length; aIdx++) {
+              if (memNames[aIdx].value.trim()) {
+                const memAvatarUrl = await uploadFileIfSelected(memFiles[aIdx], memAvatars[aIdx]?.value.trim() || localOrgData.komisi?.[kIdx]?.anggota?.[aIdx]?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80');
+                anggotaList.push({
+                  name: memNames[aIdx].value.trim(),
+                  dept: memDepts?.[aIdx]?.value.trim() || '',
+                  avatar: memAvatarUrl
+                });
+              }
+            }
+          }
+
+          updatedKomisi.push({
+            id: localOrgData.komisi?.[kIdx]?.id || `komisi-${kIdx+1}`,
+            code: komCodes[kIdx].value.trim(),
+            title: komTitles[kIdx]?.value.trim() || '',
+            themeColor: localOrgData.komisi?.[kIdx]?.themeColor || (kIdx % 2 === 0 ? 'rose' : 'blue'),
+            ketua: {
+              name: komKetuaNames[kIdx]?.value.trim() || '',
+              dept: komKetuaDepts[kIdx]?.value.trim() || '',
+              avatar: ketuaAvatarUrl
+            },
+            anggota: anggotaList
+          });
+        }
+
+        const newOrgStructure = {
+          pembina: updatedPembina,
+          presidium: updatedPresidium,
+          sekben: updatedSekben,
+          komisi: updatedKomisi
+        };
+
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orgStructure: newOrgStructure })
+        });
+
+        if (res.ok) {
+          orgModal.close();
+          window.location.reload();
+        } else {
+          alert('Gagal menyimpan perubahan Bagan Organisasi.');
+        }
+      });
+    }
+  }
+
+  setupProfileAdmin();
+  document.addEventListener('astro:after-swap', setupProfileAdmin);
+  document.addEventListener('astro:page-load', setupProfileAdmin);
+</script>
