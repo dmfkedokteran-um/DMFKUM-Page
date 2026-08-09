@@ -297,6 +297,14 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
 
     if (editContactBtn && contactModal) {
       editContactBtn.addEventListener('click', () => {
+        try {
+          const s = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          if (s.contactEmail) (document.getElementById('email-input') as HTMLInputElement).value = s.contactEmail;
+          if (s.contactPhone) (document.getElementById('phone-input') as HTMLInputElement).value = s.contactPhone;
+          if (s.contactInstagram) (document.getElementById('instagram-input') as HTMLInputElement).value = s.contactInstagram;
+          if (s.contactLinktree) (document.getElementById('linktree-input') as HTMLInputElement).value = s.contactLinktree;
+          if (s.contactAddress) (document.getElementById('address-input') as HTMLTextAreaElement).value = s.contactAddress;
+        } catch (e) {}
         contactModal.showModal();
       });
     }

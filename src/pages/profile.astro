@@ -654,7 +654,20 @@ const org = siteSettings.orgStructure;
     const profileForm = document.getElementById('profile-form') as HTMLFormElement | null;
 
     if (editProfileBtn && profileModal) {
-      editProfileBtn.addEventListener('click', () => profileModal.showModal());
+      editProfileBtn.addEventListener('click', () => {
+        try {
+          const s = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          if (s.visi) {
+            const el = document.getElementById('visi-input') as HTMLTextAreaElement | null;
+            if (el) el.value = s.visi;
+          }
+          if (Array.isArray(s.misi)) {
+            const el = document.getElementById('misi-input') as HTMLTextAreaElement | null;
+            if (el) el.value = s.misi.join('\n');
+          }
+        } catch (e) {}
+        profileModal.showModal();
+      });
     }
     if (closeProfileModalBtn && profileModal) {
       closeProfileModalBtn.addEventListener('click', () => profileModal.close());
@@ -739,7 +752,32 @@ const org = siteSettings.orgStructure;
     const orgBgForm = document.getElementById('org-bg-form') as HTMLFormElement | null;
 
     if (editOrgBgBtn && orgBgModal) {
-      editOrgBgBtn.addEventListener('click', () => orgBgModal.showModal());
+      editOrgBgBtn.addEventListener('click', () => {
+        try {
+          const s = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          if (s.parliamentName) {
+            const el = document.getElementById('parliament-name-input') as HTMLInputElement | null;
+            if (el) el.value = s.parliamentName;
+          }
+          if (s.parliamentLogo !== undefined) {
+            const el = document.getElementById('parliament-logo-url-input') as HTMLInputElement | null;
+            if (el) el.value = s.parliamentLogo;
+          }
+          if (s.orgTitle) {
+            const el = document.getElementById('org-title-input') as HTMLInputElement | null;
+            if (el) el.value = s.orgTitle;
+          }
+          if (s.orgSubtitle) {
+            const el = document.getElementById('org-subtitle-input') as HTMLTextAreaElement | null;
+            if (el) el.value = s.orgSubtitle;
+          }
+          if (s.orgBgImage) {
+            const el = document.getElementById('org-bg-url-input') as HTMLInputElement | null;
+            if (el) el.value = s.orgBgImage;
+          }
+        } catch (e) {}
+        orgBgModal.showModal();
+      });
     }
     if (closeOrgBgModalBtn && orgBgModal) {
       closeOrgBgModalBtn.addEventListener('click', () => orgBgModal.close());
