@@ -316,16 +316,26 @@ const newsList = defaultNewsData || MOCK_NEWS;
 
     // CRUD Helper functions
     async function deleteNews(id: number) {
-      // Try server delete, fall back to localStorage on static/serverless hosts
-      try {
-        await fetch(`/api/news?id=${id}`, { method: 'DELETE' }).catch(() => {});
-      } catch (_) {}
-      // Remove from localStorage cache
+      // Remove from localStorage immediately
       const cached = JSON.parse(localStorage.getItem('dmfk_news') || 'null');
       if (cached) {
-        const updated = cached.filter((n: any) => n.id !== id);
+        const updated = cached.filter((n: any) => String(n.id) !== String(id));
         localStorage.setItem('dmfk_news', JSON.stringify(updated));
       }
+      // Try server delete — send id in JSON body
+      try {
+        const res = await fetch('/api/news', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData && Array.isArray(resData.news)) {
+            localStorage.setItem('dmfk_news', JSON.stringify(resData.news));
+          }
+        }
+      } catch (_) {}
       window.location.reload();
     }
 
@@ -536,20 +546,26 @@ const newsList = defaultNewsData || MOCK_NEWS;
           content: contentVal
         };
 
-        // Try server save, always persist to localStorage as fallback
+        // Upsert into localStorage cache immediately (optimistic)
+        const cached = JSON.parse(localStorage.getItem('dmfk_news') || 'null');
+        const base = cached || newsList;
+        const idx = base.findIndex((n: any) => String(n.id) === String(entry.id));
+        if (idx >= 0) base[idx] = entry; else base.push(entry);
+        localStorage.setItem('dmfk_news', JSON.stringify(base));
+        // Sync to server and use server-returned list as source of truth
         try {
-          await fetch('/api/news', {
+          const res = await fetch('/api/news', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry)
-          }).catch(() => {});
+          });
+          if (res.ok) {
+            const resData = await res.json();
+            if (resData && Array.isArray(resData.news)) {
+              localStorage.setItem('dmfk_news', JSON.stringify(resData.news));
+            }
+          }
         } catch (_) {}
-        // Upsert into localStorage cache
-        const cached = JSON.parse(localStorage.getItem('dmfk_news') || 'null');
-        const base = cached || newsList;
-        const idx = base.findIndex((n: any) => n.id === entry.id);
-        if (idx >= 0) base[idx] = entry; else base.push(entry);
-        localStorage.setItem('dmfk_news', JSON.stringify(base));
         newsFormModal?.close();
         window.location.reload();
       });
