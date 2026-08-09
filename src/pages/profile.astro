@@ -619,6 +619,137 @@ const org = siteSettings.orgStructure;
   function setupProfileAdmin() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
+    function renderOrgChartDOM(org: any) {
+      const container = document.getElementById('org-chart-container');
+      if (!container || !org) return;
+
+      let html = '<div class="flex flex-col items-center space-y-8">';
+
+      // Tier 1: Pembina
+      if (org.pembina && (org.pembina.name || org.pembina.title)) {
+        html += `
+          <div class="flex flex-col items-center">
+            <div class="bg-gradient-to-r from-gray-50 to-rose-50/40 px-5 py-3.5 rounded-2xl border border-gray-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition-all">
+              <img src="${org.pembina.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}" alt="Pembina" class="w-11 h-11 object-cover rounded-full ring-2 ring-rose-200 shrink-0" />
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 block">${org.pembina.title || 'Pembina Organisasi'}</span>
+                <h4 class="font-extrabold text-gray-900 text-sm leading-tight">${org.pembina.name || ''}</h4>
+                <p class="text-[10px] text-gray-400 font-medium mt-0.5">${org.pembina.nip || ''}</p>
+              </div>
+            </div>
+            <div class="w-0.5 h-6 bg-rose-300"></div>
+          </div>
+        `;
+      }
+
+      // Tier 2: Presidium
+      if (Array.isArray(org.presidium) && org.presidium.length > 0) {
+        html += `
+          <div class="flex flex-col items-center w-full max-w-4xl">
+            <div class="flex flex-wrap justify-center gap-4 w-full">
+              ${org.presidium.map((pres: any) => `
+                <div class="bg-gradient-to-br from-rose-900 to-rose-950 text-white p-4 rounded-2xl shadow-md flex items-center gap-3.5 border border-rose-800 min-w-[240px] max-w-[280px] flex-1">
+                  <img src="${pres.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80'}" alt="${pres.role || ''}" class="w-12 h-12 object-cover rounded-full ring-2 ring-white/20 shrink-0" />
+                  <div class="overflow-hidden">
+                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-rose-200 bg-white/10 px-2 py-0.5 rounded truncate block w-fit">${pres.role || ''}</span>
+                    <h4 class="font-extrabold text-white text-sm mt-1 truncate">${pres.name || ''}</h4>
+                    <p class="text-[10px] text-rose-200/80 font-medium truncate">${pres.dept || ''}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="w-0.5 h-6 bg-gray-300 mt-4"></div>
+          </div>
+        `;
+      }
+
+      // Tier 3: SekBen
+      if (Array.isArray(org.sekben) && org.sekben.length > 0) {
+        html += `
+          <div class="flex flex-col items-center w-full max-w-4xl">
+            <div class="flex flex-wrap justify-center gap-4 w-full">
+              ${org.sekben.map((sb: any) => `
+                <div class="bg-gray-50/80 p-3.5 rounded-2xl border border-gray-200/60 flex items-center gap-3 min-w-[220px] max-w-[260px] flex-1">
+                  <img src="${sb.avatar || 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80'}" alt="${sb.role || ''}" class="w-10 h-10 object-cover rounded-xl shrink-0" />
+                  <div class="overflow-hidden">
+                    <span class="text-[9px] font-extrabold uppercase tracking-wider text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-100 truncate block w-fit">${sb.role || ''}</span>
+                    <h4 class="font-extrabold text-gray-900 text-xs mt-1 truncate">${sb.name || ''}</h4>
+                    <p class="text-[10px] text-gray-400 font-medium truncate">${sb.dept || ''}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="w-0.5 h-8 bg-gray-300 mt-4"></div>
+          </div>
+        `;
+      }
+
+      // Tier 4: Komisi
+      if (Array.isArray(org.komisi) && org.komisi.length > 0) {
+        html += `
+          <div class="w-full">
+            <div class="text-center mb-6">
+              <span class="text-[11px] font-extrabold uppercase tracking-widest text-rose-600 bg-rose-50 px-4 py-1 rounded-full border border-rose-100">
+                Komisi & Keanggotaan (${org.komisi.length} Komisi)
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 w-full items-start">
+              ${org.komisi.map((kom: any) => `
+                <div class="bg-gray-50/50 rounded-2xl p-4 border border-gray-200/70 flex flex-col space-y-4">
+                  <div class="text-center pb-3 border-b border-gray-200/60">
+                    <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md ${
+                      kom.themeColor === 'blue' ? 'bg-blue-100 text-blue-700' :
+                      kom.themeColor === 'emerald' ? 'bg-emerald-100 text-emerald-700' :
+                      kom.themeColor === 'fuchsia' ? 'bg-fuchsia-100 text-fuchsia-700' :
+                      'bg-rose-100 text-rose-700'
+                    }">
+                      ${kom.code || ''}
+                    </span>
+                    <h3 class="font-extrabold text-gray-900 text-sm mt-1.5 leading-snug">${kom.title || ''}</h3>
+                  </div>
+
+                  ${kom.ketua ? `
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex items-center gap-3">
+                      <img src="${kom.ketua.avatar || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80'}" alt="${kom.ketua.name || ''}" class="w-10 h-10 object-cover rounded-full ring-2 ring-rose-400 shrink-0" />
+                      <div class="overflow-hidden">
+                        <span class="text-[8px] font-extrabold uppercase tracking-widest text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">Ketua Komisi</span>
+                        <h4 class="font-extrabold text-gray-900 text-xs truncate mt-0.5">${kom.ketua.name || ''}</h4>
+                        <p class="text-[10px] text-gray-400 font-medium truncate">${kom.ketua.dept || ''}</p>
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  <div class="w-0.5 h-3 bg-gray-300 mx-auto"></div>
+
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-gray-400 mb-1 px-1">
+                      <span>Anggota Komisi</span>
+                      <span>(${kom.anggota ? kom.anggota.length : 0})</span>
+                    </div>
+
+                    ${(kom.anggota || []).map((mem: any) => `
+                      <div class="bg-white p-2.5 rounded-xl border border-gray-100 flex items-center gap-2.5 hover:border-gray-200 transition-colors">
+                        <img src="${mem.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80'}" alt="${mem.name || ''}" class="w-8 h-8 object-cover rounded-full shrink-0" />
+                        <div class="overflow-hidden">
+                          <h5 class="font-bold text-gray-800 text-[11px] truncate leading-tight">${mem.name || ''}</h5>
+                          <p class="text-[9px] text-gray-400 font-medium truncate">${mem.dept || ''}</p>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
     function applyProfileSettingsToDOM(s: any) {
       if (!s || typeof s !== 'object') return;
       if (s.aboutTag) {
@@ -675,6 +806,9 @@ const org = siteSettings.orgStructure;
       if (s.orgBgImage) {
         const el = document.getElementById('org-hero-bg');
         if (el) (el as HTMLElement).style.backgroundImage = `url('${s.orgBgImage}')`;
+      }
+      if (s.orgStructure) {
+        renderOrgChartDOM(s.orgStructure);
       }
     }
 
@@ -889,6 +1023,16 @@ const org = siteSettings.orgStructure;
 
     if (editOrgBtn && orgModal) {
       editOrgBtn.addEventListener('click', () => {
+        try {
+          const s = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          if (s.orgStructure) {
+            localOrgData = JSON.parse(JSON.stringify(s.orgStructure));
+          } else {
+            localOrgData = JSON.parse(orgForm?.getAttribute('data-org') || '{}');
+          }
+        } catch (e) {
+          localOrgData = JSON.parse(orgForm?.getAttribute('data-org') || '{}');
+        }
         renderOrgFormInputs();
         orgModal.showModal();
       });
