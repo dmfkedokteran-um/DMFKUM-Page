@@ -266,7 +266,19 @@ const docs = defaultDocsData || MOCK_DOCS;
   </div>
 </Layout>
 
-<script is:inline>
+<script>
+  interface DocItem {
+    id: number;
+    title: string;
+    category: string;
+    ext: string;
+    size: string;
+    date: string;
+    downloads: number;
+    content?: string;
+    fileUrl?: string;
+  }
+
   // --- IndexedDB Configuration & Helpers (Fallback) ---
   const dbName = 'DMFKUMRepoDB';
   const storeName = 'documents';
