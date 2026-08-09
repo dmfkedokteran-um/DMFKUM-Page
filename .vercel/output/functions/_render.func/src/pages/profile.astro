@@ -113,7 +113,7 @@ const DEFAULT_ORG_STRUCTURE = {
 
 import defaultSettingsData from "../../database/settings.json";
 
-let siteSettings = {
+const DEFAULT_PROFILE_SETTINGS = {
   orgBgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
   parliamentName: "Parlemen Nawa Cita 2026",
   parliamentLogo: "",
@@ -125,10 +125,12 @@ let siteSettings = {
     "Mewujudkan ekosistem administrasi transparan.",
     "Menjalin kemitraan kolaboratif lintas sektor."
   ],
-  orgStructure: DEFAULT_ORG_STRUCTURE,
-  ...defaultSettingsData,
-  orgStructure: (defaultSettingsData && defaultSettingsData.orgStructure) || DEFAULT_ORG_STRUCTURE
+  orgStructure: DEFAULT_ORG_STRUCTURE
 };
+
+const siteSettings = Object.assign({}, DEFAULT_PROFILE_SETTINGS, defaultSettingsData, {
+  orgStructure: (defaultSettingsData && defaultSettingsData.orgStructure) || DEFAULT_ORG_STRUCTURE
+});
 
 const org = siteSettings.orgStructure;
 ---
