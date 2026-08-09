@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import defaultNewsData from '../../../database/news.json';
 
 const DB_PATH = path.resolve(process.cwd(), 'database/news.json');
 
@@ -9,17 +10,21 @@ async function readDB() {
     const data = await fs.readFile(DB_PATH, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    return [];
+    return defaultNewsData;
   }
 }
 
 // Helper to write database
 async function writeDB(data) {
-  await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-  await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  try {
+    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
+    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
+    // Graceful fallback for read-only serverless environments
+  }
 }
 
-// Helper to delete physical upload file from disk
+// Delete physical cover image file if present in uploads
 async function deletePhysicalUploadFile(fileUrl) {
   if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.startsWith('/uploads/')) return;
   const fileName = fileUrl.replace('/uploads/', '');
@@ -34,9 +39,7 @@ export async function GET() {
   const news = await readDB();
   return new Response(JSON.stringify(news), {
     status: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    headers: { 'Content-Type': 'application/json' }
   });
 }
 
@@ -44,70 +47,59 @@ export async function POST({ request }) {
   try {
     const entry = await request.json();
     const news = await readDB();
-    
-    const index = news.findIndex(item => item.id === entry.id);
-    if (index !== -1) {
-      // Check if image was replaced and delete old file if it was a local upload
-      const oldImage = news[index].image;
-      if (oldImage && oldImage !== entry.image) {
-        await deletePhysicalUploadFile(oldImage);
+
+    let updatedNews;
+    if (entry.id) {
+      // Find existing item to clean up replaced cover image
+      const existing = news.find(item => item.id === entry.id);
+      if (existing && existing.image !== entry.image) {
+        await deletePhysicalUploadFile(existing.image);
       }
-      news[index] = { ...news[index], ...entry };
+      updatedNews = news.map(item => item.id === entry.id ? { ...item, ...entry } : item);
     } else {
-      // Add new news item
-      news.unshift(entry);
+      const newEntry = {
+        ...entry,
+        id: Date.now().toString(),
+        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+      };
+      updatedNews = [newEntry, ...news];
     }
-    
-    await writeDB(news);
-    return new Response(JSON.stringify({ success: true, item: entry }), {
+
+    await writeDB(updatedNews);
+    return new Response(JSON.stringify({ success: true, news: updatedNews }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 }
 
-export async function DELETE({ url }) {
+export async function DELETE({ request }) {
   try {
-    const id = parseInt(url.searchParams.get('id') || '');
+    const { id } = await request.json();
+    const news = await readDB();
     
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Missing ID parameter' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
-    let news = await readDB();
-    const targetItem = news.find(item => item.id === id);
-    
-    if (targetItem && targetItem.image) {
-      await deletePhysicalUploadFile(targetItem.image);
+    // Find target item to delete cover image file from server disk
+    const target = news.find(item => item.id === id);
+    if (target && target.image) {
+      await deletePhysicalUploadFile(target.image);
     }
 
-    news = news.filter(item => item.id !== id);
-    
-    await writeDB(news);
-    return new Response(JSON.stringify({ success: true }), {
+    const updatedNews = news.filter(item => item.id !== id);
+    await writeDB(updatedNews);
+
+    return new Response(JSON.stringify({ success: true, news: updatedNews }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 }

@@ -1,27 +1,25 @@
 import fs from 'fs/promises';
 import path from 'path';
+import defaultSettingsData from '../../../database/settings.json';
 
 const DB_PATH = path.resolve(process.cwd(), 'database/settings.json');
-
-const DEFAULT_SETTINGS = {
-  heroImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
-  orgBgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
-  heroTitle: "Membangun Sinergi,\nMenginspirasi Negeri.",
-  heroSubtitle: "Jelajahi portal kami. Temukan pembaruan terkini, rekam jejak program kerja, dan akses dokumen publik secara instan."
-};
 
 async function readDB() {
   try {
     const data = await fs.readFile(DB_PATH, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    return DEFAULT_SETTINGS;
+    return defaultSettingsData;
   }
 }
 
 async function writeDB(data) {
-  await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-  await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  try {
+    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
+    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
+    // Graceful fallback for read-only serverless environments
+  }
 }
 
 // Delete physical upload file from both public/uploads and dist/client/uploads

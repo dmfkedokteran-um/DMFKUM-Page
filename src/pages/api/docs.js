@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import defaultDocsData from '../../../database/docs.json';
 
 const DB_PATH = path.resolve(process.cwd(), 'database/docs.json');
 
@@ -9,17 +10,21 @@ async function readDB() {
     const data = await fs.readFile(DB_PATH, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    return [];
+    return defaultDocsData;
   }
 }
 
 // Helper to write database
 async function writeDB(data) {
-  await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-  await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  try {
+    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
+    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
+    // Graceful fallback for read-only serverless environments
+  }
 }
 
-// Helper to delete physical upload file from disk
+// Delete physical upload file from disk
 async function deletePhysicalUploadFile(fileUrl) {
   if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.startsWith('/uploads/')) return;
   const fileName = fileUrl.replace('/uploads/', '');
@@ -34,9 +39,7 @@ export async function GET() {
   const docs = await readDB();
   return new Response(JSON.stringify(docs), {
     status: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    headers: { 'Content-Type': 'application/json' }
   });
 }
 
@@ -44,75 +47,60 @@ export async function POST({ request }) {
   try {
     const entry = await request.json();
     const docs = await readDB();
-    
-    const index = docs.findIndex(doc => doc.id === entry.id);
-    if (index !== -1) {
-      // Check if fileUrl or coverImage changed and delete old file if it was a local upload
-      const oldDoc = docs[index];
-      if (oldDoc.fileUrl && oldDoc.fileUrl !== entry.fileUrl) {
-        await deletePhysicalUploadFile(oldDoc.fileUrl);
-      }
-      if (oldDoc.coverImage && oldDoc.coverImage !== entry.coverImage) {
-        await deletePhysicalUploadFile(oldDoc.coverImage);
-      }
 
-      docs[index] = { ...docs[index], ...entry };
-    } else {
-      // Add new document at the beginning
-      docs.unshift(entry);
-    }
-    
-    await writeDB(docs);
-    return new Response(JSON.stringify({ success: true, doc: entry }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json'
+    let updatedDocs;
+    if (entry.id) {
+      // Find existing item to clean up replaced physical document file
+      const existing = docs.find(item => item.id === entry.id);
+      if (existing && existing.fileUrl !== entry.fileUrl) {
+        await deletePhysicalUploadFile(existing.fileUrl);
       }
+      updatedDocs = docs.map(item => item.id === entry.id ? { ...item, ...entry } : item);
+    } else {
+      const newEntry = {
+        ...entry,
+        id: Date.now().toString(),
+        downloads: 0,
+        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+      };
+      updatedDocs = [newEntry, ...docs];
+    }
+
+    await writeDB(updatedDocs);
+    return new Response(JSON.stringify({ success: true, docs: updatedDocs }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 }
 
-export async function DELETE({ url }) {
+export async function DELETE({ request }) {
   try {
-    const id = parseInt(url.searchParams.get('id') || '');
+    const { id } = await request.json();
+    const docs = await readDB();
     
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Missing ID parameter' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
-    let docs = await readDB();
-    const targetDoc = docs.find(doc => doc.id === id);
-
-    if (targetDoc) {
-      if (targetDoc.fileUrl) await deletePhysicalUploadFile(targetDoc.fileUrl);
-      if (targetDoc.coverImage) await deletePhysicalUploadFile(targetDoc.coverImage);
+    // Find target document item to delete physical file from server disk
+    const target = docs.find(item => item.id === id);
+    if (target && target.fileUrl) {
+      await deletePhysicalUploadFile(target.fileUrl);
     }
 
-    docs = docs.filter(doc => doc.id !== id);
-    
-    await writeDB(docs);
-    return new Response(JSON.stringify({ success: true }), {
+    const updatedDocs = docs.filter(item => item.id !== id);
+    await writeDB(updatedDocs);
+
+    return new Response(JSON.stringify({ success: true, docs: updatedDocs }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 }
