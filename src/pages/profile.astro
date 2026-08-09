@@ -872,16 +872,29 @@ const org = siteSettings.orgStructure;
     if (closeZoomFooterBtn && zoomModal) {
       closeZoomFooterBtn.addEventListener('click', () => zoomModal.close());
     }
+    if (zoomModal) {
+      zoomModal.addEventListener('click', (e) => {
+        if (e.target === zoomModal) zoomModal.close();
+      });
+    }
 
     if (orgChartContainer && zoomModal) {
       orgChartContainer.addEventListener('click', (e) => {
         const card = (e.target as HTMLElement).closest('.org-card-zoom') as HTMLElement | null;
         if (!card) return;
 
-        const name = card.getAttribute('data-name') || 'Personil Pengurus';
-        const role = card.getAttribute('data-role') || 'Pengurus Organisasi';
-        const dept = card.getAttribute('data-dept') || '';
-        const avatar = card.getAttribute('data-avatar') || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80';
+        const rawName = card.getAttribute('data-name');
+        const name = (rawName && rawName.trim()) ? rawName.trim() : 'Belum Ada Nama';
+
+        const rawRole = card.getAttribute('data-role');
+        const role = (rawRole && rawRole.trim()) ? rawRole.trim() : 'Pengurus Organisasi';
+
+        const rawDept = card.getAttribute('data-dept');
+        const dept = (rawDept && rawDept.trim()) ? rawDept.trim() : 'Fakultas Kedokteran UM';
+
+        const rawAvatar = card.getAttribute('data-avatar');
+        const defaultFallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+        const avatar = (rawAvatar && rawAvatar.trim()) ? rawAvatar.trim() : defaultFallback;
 
         const zoomAvatar = document.getElementById('zoom-avatar') as HTMLImageElement | null;
         const zoomRole = document.getElementById('zoom-role-badge');
@@ -891,21 +904,21 @@ const org = siteSettings.orgStructure;
 
         if (zoomAvatar) zoomAvatar.src = avatar;
         if (zoomRole) zoomRole.textContent = role;
-        if (zoomName) zoomName.textContent = name || 'Nama Belum Diisi';
-        if (zoomDept) zoomDept.textContent = dept || 'Fakultas Kedokteran UM';
+        if (zoomName) zoomName.textContent = name;
+        if (zoomDept) zoomDept.textContent = dept;
         if (zoomInfo) {
           zoomInfo.innerHTML = `
-            <div class="flex justify-between py-1.5 border-b border-gray-100/80">
-              <span class="text-gray-400">Jabatan:</span>
-              <span class="font-bold text-gray-800">${role}</span>
+            <div class="flex justify-between py-1.5 border-b border-gray-200/60">
+              <span class="text-gray-400 font-semibold">Jabatan:</span>
+              <span class="font-extrabold text-gray-800">${role}</span>
             </div>
-            <div class="flex justify-between py-1.5 border-b border-gray-100/80">
-              <span class="text-gray-400">Keterangan / Prodi:</span>
-              <span class="font-bold text-gray-800">${dept || '-'}</span>
+            <div class="flex justify-between py-1.5 border-b border-gray-200/60">
+              <span class="text-gray-400 font-semibold">Keterangan / Prodi:</span>
+              <span class="font-extrabold text-gray-800">${dept}</span>
             </div>
             <div class="flex justify-between py-1.5">
-              <span class="text-gray-400">Organisasi:</span>
-              <span class="font-bold text-rose-600">DMFK UM 2026</span>
+              <span class="text-gray-400 font-semibold">Organisasi:</span>
+              <span class="font-extrabold text-rose-600">DMFK UM 2026</span>
             </div>
           `;
         }
