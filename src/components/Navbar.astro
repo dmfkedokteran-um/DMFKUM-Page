@@ -1,0 +1,435 @@
+---
+import { Building, Menu, X, Lock, Unlock } from "lucide-astro";
+
+const pathname = Astro.url.pathname;
+const activeId =
+  pathname === "/"
+    ? "home"
+    : pathname.startsWith("/profile")
+      ? "profile"
+      : pathname.startsWith("/proker")
+        ? "proker"
+        : pathname.startsWith("/repo")
+          ? "repo"
+          : pathname.startsWith("/contact")
+            ? "contact"
+            : "home";
+
+const navItems = [
+  { id: "home", label: "Beranda", url: "/" },
+  { id: "profile", label: "Profil", url: "/profile" },
+  { id: "proker", label: "Dokumentasi Program", url: "/proker" },
+  { id: "repo", label: "Repositori", url: "/repo" },
+  { id: "contact", label: "Kontak", url: "/contact" },
+];
+---
+
+<nav
+  class="bg-white/80 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-50 transition-all duration-300"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-20">
+      {/* Logo Area */}
+      <a
+        href="/"
+        class="flex items-center gap-2 cursor-pointer group outline-none relative select-none"
+      >
+        <div
+          class="bg-rose-50 p-0.5 rounded-xl group-hover:bg-rose-100 transition-colors flex items-center justify-center w-12 h-12 overflow-hidden shrink-0"
+        >
+          <img
+            src="/logo.png"
+            alt="Logo"
+            class="w-full h-full object-contain"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+          />
+          <Building class="h-7 w-7 text-rose-700" style="display: none;" />
+        </div>
+        <div class="flex flex-col text-left justify-center">
+          <span
+            class="block font-extrabold text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-700 to-red-900 leading-tight"
+          >
+            DMF Kedokteran
+          </span>
+          <span class="block text-[10px] font-bold text-gray-400 tracking-wider uppercase mt-0.5 leading-normal">
+            Universitas Negeri Malang
+          </span>
+        </div>
+        {/* Invisible Hitbox Shield */}
+        <div class="absolute inset-0 z-10 w-full h-full"></div>
+      </a>
+
+      {/* Desktop Nav */}
+      <div class="hidden md:flex items-center">
+        <div class="ml-10 flex items-center space-x-2">
+          {
+            navItems.map((item) => (
+              <a
+                href={item.url}
+                class={`relative px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center justify-center outline-none select-none ${
+                  activeId === item.id
+                    ? "bg-rose-50 text-rose-700 shadow-sm"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <span>{item.label}</span>
+                {/* Invisible Hitbox Shield */}
+                <div class="absolute inset-0 z-10 w-full h-full rounded-full" />
+              </a>
+            ))
+          }
+        </div>
+
+        {/* Admin Toggle Button (Top Right Header) */}
+        <div class="ml-6 flex items-center border-l border-gray-200 pl-6">
+          <button
+            id="admin-toggle-btn"
+            class="p-3 rounded-full transition-all shadow-sm bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center outline-none cursor-pointer"
+            title="Masuk ke Mode Admin"
+          >
+            <span id="admin-icon-lock" class="flex items-center justify-center">
+              <Lock class="h-5 w-5 text-rose-600" />
+            </span>
+            <span
+              id="admin-icon-unlock"
+              class="hidden flex items-center justify-center"
+            >
+              <Unlock class="h-5 w-5 text-emerald-600" />
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Nav Area */}
+      <div class="md:hidden flex items-center gap-3">
+        {/* Admin Toggle Button (Mobile) */}
+        <button
+          id="admin-toggle-btn-mobile"
+          class="p-2.5 rounded-xl transition-all shadow-sm bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center outline-none cursor-pointer"
+          title="Masuk ke Mode Admin"
+        >
+          <span
+            id="admin-icon-lock-mobile"
+            class="flex items-center justify-center"
+          >
+            <Lock class="h-5 w-5 text-rose-600" />
+          </span>
+          <span
+            id="admin-icon-unlock-mobile"
+            class="hidden flex items-center justify-center"
+          >
+            <Unlock class="h-5 w-5 text-emerald-600" />
+          </span>
+        </button>
+
+        <button
+          id="mobile-menu-btn"
+          aria-label="Toggle Menu"
+          class="relative p-3 rounded-2xl bg-gray-50 text-gray-600 hover:bg-gray-100 focus:outline-none transition-colors flex items-center justify-center min-w-[48px] min-h-[48px] select-none"
+        >
+          <span id="menu-icon-open" class="flex items-center justify-center">
+            <Menu class="h-6 w-6" />
+          </span>
+          <span
+            id="menu-icon-close"
+            class="hidden flex items-center justify-center"
+          >
+            <X class="h-6 w-6" />
+          </span>
+          {/* Invisible Hitbox Shield */}
+          <div class="absolute inset-0 z-10 w-full h-full rounded-2xl"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Mobile Nav Menu */}
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden bg-white border-b border-gray-100 absolute w-full shadow-lg shadow-gray-200/50"
+  >
+    <div class="px-4 pt-2 pb-6 space-y-2">
+      {
+        navItems.map((item) => (
+          <a
+            href={item.url}
+            class={`relative block w-full text-left px-5 py-3 rounded-2xl text-base font-semibold transition-colors select-none ${
+              activeId === item.id
+                ? "bg-rose-50 text-rose-700"
+                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            }`}
+          >
+            {item.label}
+            {/* Invisible Hitbox Shield */}
+            <div class="absolute inset-0 z-10 w-full h-full rounded-2xl" />
+          </a>
+        ))
+      }
+    </div>
+  </div>
+
+  {/* Modal Login Admin Header */}
+  <dialog
+    id="login-modal"
+    closedby="any"
+    class="fixed inset-0 bg-transparent p-4 border-none outline-none open:flex justify-center items-center backdrop:bg-gray-900/80 backdrop:backdrop-blur-sm z-50 text-left"
+  >
+    <div
+      class="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100"
+    >
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h2 class="text-2xl font-extrabold text-gray-900">Akses Admin</h2>
+          <p class="text-sm font-medium text-gray-500 mt-1">
+            Masuk untuk mengelola data portal.
+          </p>
+        </div>
+        <button
+          id="close-login-btn"
+          class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none"
+        >
+          <X class="h-5 w-5" />
+        </button>
+      </div>
+
+      <div
+        id="login-error-msg"
+        class="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold border border-red-100 text-center hidden animate-fade-in"
+      >
+        Username atau password salah!
+      </div>
+
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Username</label
+          >
+          <input
+            required
+            type="text"
+            id="login-username"
+            value="admin"
+            placeholder="Masukkan username"
+            class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Password</label
+          >
+          <input
+            required
+            type="password"
+            id="login-password"
+            placeholder="Masukkan password"
+            class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full mt-6 py-4 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-lg cursor-pointer"
+        >
+          Masuk Mode Admin
+        </button>
+      </form>
+    </div>
+  </dialog>
+</nav>
+
+<script>
+  function setupNavbar() {
+    const menuBtn = document.getElementById("mobile-menu-btn");
+    const mobileMenu = document.getElementById("mobile-menu");
+    const menuIconOpen = document.getElementById("menu-icon-open");
+    const menuIconClose = document.getElementById("menu-icon-close");
+
+    if (menuBtn && mobileMenu && menuIconOpen && menuIconClose) {
+      menuBtn.addEventListener("click", () => {
+        const isOpen = !mobileMenu.classList.contains("hidden");
+        if (isOpen) {
+          mobileMenu.classList.add("hidden");
+          menuIconOpen.classList.remove("hidden");
+          menuIconClose.classList.add("hidden");
+        } else {
+          mobileMenu.classList.remove("hidden");
+          menuIconOpen.classList.add("hidden");
+          menuIconClose.classList.remove("hidden");
+        }
+      });
+    }
+
+    // Admin Auth State Setup
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+    // Toggle Admin button on Desktop and Mobile Header
+    const adminToggleBtn = document.getElementById("admin-toggle-btn");
+    const adminToggleBtnMobile = document.getElementById(
+      "admin-toggle-btn-mobile",
+    );
+
+    const adminIconLock = document.getElementById("admin-icon-lock");
+    const adminIconUnlock = document.getElementById("admin-icon-unlock");
+    const adminIconLockMobile = document.getElementById(
+      "admin-icon-lock-mobile",
+    );
+    const adminIconUnlockMobile = document.getElementById(
+      "admin-icon-unlock-mobile",
+    );
+
+    const loginModal = document.getElementById(
+      "login-modal",
+    ) as HTMLDialogElement | null;
+    const closeLoginBtn = document.getElementById("close-login-btn");
+    const loginForm = document.getElementById(
+      "login-form",
+    ) as HTMLFormElement | null;
+    const loginErrorMsg = document.getElementById("login-error-msg");
+
+    // Update button icons based on isAdmin state
+    function updateAdminUI() {
+      if (isAdmin) {
+        if (adminIconLock) adminIconLock.classList.add("hidden");
+        if (adminIconUnlock) adminIconUnlock.classList.remove("hidden");
+        if (adminIconLockMobile) adminIconLockMobile.classList.add("hidden");
+        if (adminIconUnlockMobile)
+          adminIconUnlockMobile.classList.remove("hidden");
+
+        if (adminToggleBtn) {
+          adminToggleBtn.title = "Keluar dari Mode Admin";
+          adminToggleBtn.classList.remove(
+            "bg-gray-100",
+            "text-gray-500",
+            "hover:bg-gray-200",
+          );
+          adminToggleBtn.classList.add(
+            "bg-rose-100",
+            "text-rose-700",
+            "hover:bg-rose-200",
+          );
+        }
+        if (adminToggleBtnMobile) {
+          adminToggleBtnMobile.title = "Keluar dari Mode Admin";
+          adminToggleBtnMobile.classList.remove("bg-gray-100", "text-gray-500");
+          adminToggleBtnMobile.classList.add("bg-rose-100", "text-rose-700");
+        }
+      } else {
+        if (adminIconLock) adminIconLock.classList.remove("hidden");
+        if (adminIconUnlock) adminIconUnlock.classList.add("hidden");
+        if (adminIconLockMobile) adminIconLockMobile.classList.remove("hidden");
+        if (adminIconUnlockMobile)
+          adminIconUnlockMobile.classList.add("hidden");
+
+        if (adminToggleBtn) {
+          adminToggleBtn.title = "Masuk ke Mode Admin";
+          adminToggleBtn.classList.remove(
+            "bg-rose-100",
+            "text-rose-700",
+            "hover:bg-rose-200",
+          );
+          adminToggleBtn.classList.add(
+            "bg-gray-100",
+            "text-gray-500",
+            "hover:bg-gray-200",
+          );
+        }
+        if (adminToggleBtnMobile) {
+          adminToggleBtnMobile.title = "Masuk ke Mode Admin";
+          adminToggleBtnMobile.classList.remove("bg-rose-100", "text-rose-700");
+          adminToggleBtnMobile.classList.add("bg-gray-100", "text-gray-500");
+        }
+      }
+    }
+
+    updateAdminUI();
+
+    // Toggle Actions
+    const handleAdminClick = () => {
+      const currentIsAdmin = localStorage.getItem("isAdmin") === "true";
+      if (currentIsAdmin) {
+        if (confirm("Apakah Anda yakin ingin keluar dari Mode Admin?")) {
+          localStorage.setItem("isAdmin", "false");
+          window.location.reload();
+        }
+      } else {
+        if (loginModal) {
+          if (loginErrorMsg) loginErrorMsg.classList.add("hidden");
+          const usernameInput = document.getElementById(
+            "login-username",
+          ) as HTMLInputElement | null;
+          const passwordInput = document.getElementById(
+            "login-password",
+          ) as HTMLInputElement | null;
+          if (usernameInput) usernameInput.value = "admin";
+          if (passwordInput) passwordInput.value = "";
+          loginModal.showModal();
+        }
+      }
+    };
+
+    if (adminToggleBtn) {
+      adminToggleBtn.addEventListener("click", handleAdminClick);
+    }
+    if (adminToggleBtnMobile) {
+      adminToggleBtnMobile.addEventListener("click", handleAdminClick);
+    }
+
+    // Modal Close
+    if (closeLoginBtn && loginModal) {
+      closeLoginBtn.addEventListener("click", () => {
+        loginModal.close();
+      });
+    }
+
+    // Dialog Light-dismiss Fallback
+    if (loginModal) {
+      loginModal.addEventListener("click", (event) => {
+        if (event.target !== loginModal) return;
+        const rect = loginModal.getBoundingClientRect();
+        const isDialogContent =
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width;
+        if (!isDialogContent) {
+          loginModal.close();
+        }
+      });
+    }
+
+    // Form Submission with dynamic active year password calculation (DMFK[currentYear])
+    if (loginForm && loginModal) {
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const usernameInput = document.getElementById(
+          "login-username",
+        ) as HTMLInputElement | null;
+        const passwordInput = document.getElementById(
+          "login-password",
+        ) as HTMLInputElement | null;
+
+        const currentYear = new Date().getFullYear();
+        const expectedPassword = `DMFK${currentYear}`;
+
+        if (usernameInput && passwordInput) {
+          const uVal = usernameInput.value.trim().toLowerCase();
+          const pVal = passwordInput.value.trim();
+
+          if (uVal === "admin" && pVal === expectedPassword) {
+            localStorage.setItem("isAdmin", "true");
+            loginModal.close();
+            window.location.reload();
+          } else {
+            if (loginErrorMsg) loginErrorMsg.classList.remove("hidden");
+          }
+        }
+      });
+    }
+  }
+
+  // Runs on initial page load
+  setupNavbar();
+
+  // Runs on Astro view transitions
+  document.addEventListener("astro:after-swap", setupNavbar);
+</script>

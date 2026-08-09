@@ -1,0 +1,1 @@
+Taruh file logo gambar Anda (seperti logo.png) di folder ini, lalu ganti tag img di Navbar.astro agar mengarah ke file tersebut (misalnya /logo.png).

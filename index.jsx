@@ -54,7 +54,7 @@ const Navbar = ({ currentView, setView, isAdmin, setIsAdmin, setShowLoginModal }
               <Building className="h-6 w-6 text-rose-700" />
             </div>
             <span className="font-extrabold text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-700 to-red-900">
-              NusaBakti
+              DMFK UM
             </span>
             <div className="absolute inset-0 z-10 w-full h-full"></div>
           </button>
@@ -898,7 +898,7 @@ const ContactView = () => (
         </div>
         <div>
           <h3 className="font-extrabold text-2xl text-gray-900 mb-1">Email Resmi</h3>
-          <p className="text-gray-500 font-medium text-lg group-hover:text-rose-600 transition-colors">info@nusabakti.org</p>
+          <p className="text-gray-500 font-medium text-lg group-hover:text-rose-600 transition-colors">info@dmfkum.org</p>
         </div>
       </a>
 
@@ -918,7 +918,7 @@ const ContactView = () => (
         </div>
         <div>
           <h3 className="font-extrabold text-2xl text-gray-900 mb-1">Instagram</h3>
-          <p className="text-gray-500 font-medium text-lg group-hover:text-fuchsia-600 transition-colors">@nusabakti</p>
+          <p className="text-gray-500 font-medium text-lg group-hover:text-fuchsia-600 transition-colors">@dmfkum</p>
         </div>
       </a>
 
@@ -928,7 +928,7 @@ const ContactView = () => (
         </div>
         <div>
           <h3 className="font-extrabold text-2xl text-gray-900 mb-1">Linktree</h3>
-          <p className="text-gray-500 font-medium text-lg group-hover:text-blue-600 transition-colors">linktr.ee/nusabakti</p>
+          <p className="text-gray-500 font-medium text-lg group-hover:text-blue-600 transition-colors">linktr.ee/dmfkum</p>
         </div>
       </a>
     </div>
@@ -1057,11 +1057,11 @@ export default function App() {
             <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
               <Building className="h-6 w-6 text-rose-400" />
             </div>
-            NusaBakti
+            DMFK UM
           </div>
           <p className="mb-6 font-medium text-gray-500 max-w-sm mx-auto">Platform Pintar Repositori Publik & Etalase Digital Organisasi Masa Depan.</p>
           <div className="w-16 h-1 bg-gray-800 rounded-full mx-auto mb-6"></div>
-          <p className="text-sm font-bold tracking-wider uppercase text-gray-600">© 2026 Organisasi NusaBakti. All rights reserved.</p>
+          <p className="text-sm font-bold tracking-wider uppercase text-gray-600">© 2026 Organisasi DMFK UM. All rights reserved.</p>
         </div>
       </footer>
     </div>

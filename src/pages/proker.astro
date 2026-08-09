@@ -1,0 +1,481 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { X, ChevronRight, Plus, Edit, Trash2 } from 'lucide-astro';
+import { MOCK_NEWS } from '../data/mockData.js';
+import fs from 'fs/promises';
+import path from 'path';
+
+// Enable Server-Side Rendering (SSR)
+export const prerender = false;
+
+// Load news/program items from local JSON database
+const DB_PATH = path.resolve(process.cwd(), 'database/news.json');
+let newsList = [];
+try {
+  const raw = await fs.readFile(DB_PATH, 'utf-8');
+  newsList = JSON.parse(raw);
+} catch (error) {
+  newsList = MOCK_NEWS;
+}
+---
+
+<Layout title="Dokumentasi Program - DMFK UM" description="Program kerja, rekam jejak, dan publikasi kegiatan terkini dari berbagai divisi DMFK UM.">
+  <div class="py-16 px-4 max-w-7xl mx-auto animate-fade-in pb-24">
+    <div class="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">Karya & Rekam Jejak</h1>
+        <p class="text-gray-500 text-lg max-w-2xl font-medium">Jelajahi galeri program kerja, dokumentasi acara, dan publikasi kegiatan terkini dari berbagai divisi.</p>
+      </div>
+      <button 
+        id="add-news-btn"
+        class="admin-only hidden flex items-center gap-2 bg-rose-600 text-white px-6 py-3 rounded-full font-bold hover:bg-rose-700 transition-colors shadow-lg shadow-rose-600/20 shrink-0 cursor-pointer outline-none"
+      >
+        <Plus class="h-5 w-5" /> Tambah Berita
+      </button>
+    </div>
+
+    {/* News Grid (Click to open preview modal) */}
+    <div id="news-grid-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24" data-initial={JSON.stringify(newsList)}>
+      {newsList.map(news => (
+        <div 
+          class="news-card group flex flex-col sm:flex-row bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl border border-gray-50 overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+          data-id={news.id}
+        >
+          <div class="sm:w-2/5 relative overflow-hidden">
+            <img src={news.image} alt={news.title} class="news-card-img w-full h-full object-cover min-h-[200px] group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+            
+            {/* Admin actions overlay */}
+            <div class="admin-only hidden absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+              <button 
+                class="edit-news-btn p-2 bg-white/90 backdrop-blur-md rounded-xl text-blue-600 hover:bg-blue-50 hover:scale-110 transition-all shadow-sm cursor-pointer outline-none"
+                data-id={news.id}
+              >
+                <Edit class="h-4 w-4"/>
+              </button>
+              <button 
+                class="delete-news-btn p-2 bg-white/90 backdrop-blur-md rounded-xl text-rose-600 hover:bg-rose-50 hover:scale-110 transition-all shadow-sm cursor-pointer outline-none"
+                data-id={news.id}
+              >
+                <Trash2 class="h-4 w-4"/>
+              </button>
+            </div>
+          </div>
+          <div class="p-6 sm:w-3/5 flex flex-col justify-center">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="text-xs font-bold px-3 py-1.5 bg-rose-50 text-rose-700 rounded-full">{news.category}</span>
+              <span class="text-xs font-medium text-gray-400">{news.date}</span>
+            </div>
+            <h3 class="font-extrabold text-xl text-gray-900 mb-3 leading-tight group-hover:text-rose-700 transition-colors">{news.title}</h3>
+            <p class="text-gray-500 text-sm mb-5 line-clamp-2 leading-relaxed">{news.excerpt}</p>
+            <div class="flex flex-wrap gap-2 mt-auto mb-3">
+              {news.tags.map(tag => (
+                <span class="text-[10px] font-bold text-gray-400 bg-gray-100/80 px-2.5 py-1 rounded-md uppercase tracking-wider">#{tag}</span>
+              ))}
+            </div>
+            <button class="text-rose-600 font-bold text-sm flex items-center gap-2 group-hover:gap-3 transition-all outline-none">
+              Selengkapnya <ChevronRight class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* --- MODALS --- */}
+
+    {/* Shared News Preview Modal */}
+    <dialog 
+      id="news-preview-modal" 
+      closedby="any"
+      class="fixed inset-0 bg-transparent p-4 border-none outline-none open:flex justify-center items-center backdrop:bg-gray-900/80 backdrop:backdrop-blur-sm"
+    >
+      <div class="modal-content bg-white w-full max-w-4xl h-[90vh] rounded-[2rem] flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
+        
+        {/* Modal Header */}
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white z-10 shadow-sm shrink-0">
+          <div class="flex items-center gap-4">
+            <span id="preview-category" class="text-xs font-bold px-3 py-1.5 bg-rose-50 text-rose-700 rounded-full"></span>
+            <span id="preview-date" class="text-sm font-medium text-gray-500"></span>
+          </div>
+          <button id="close-preview-btn" class="p-2.5 hover:bg-gray-100 rounded-full text-gray-500 transition-colors outline-none cursor-pointer">
+            <X class="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div class="flex-1 overflow-y-auto p-0 bg-white">
+          <div class="relative h-64 sm:h-96 w-full">
+            <img id="preview-image" src="" alt="" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          </div>
+          
+          <div class="p-6 sm:p-12 -mt-20 relative z-10 bg-white rounded-t-[3rem]">
+            <h2 id="preview-title" class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-6 leading-tight tracking-tight text-gray-900"></h2>
+            
+            <div id="preview-tags" class="flex flex-wrap gap-2 mb-8 border-b border-gray-100 pb-8"></div>
+
+            <div class="text-gray-600 font-medium leading-relaxed space-y-6 text-lg">
+              <p id="preview-excerpt" class="text-xl text-gray-800 font-semibold mb-4 leading-snug"></p>
+              <div id="preview-content" class="space-y-4 text-gray-700">
+                {/* Loaded dynamically */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    {/* Modal Form Tambah/Edit Berita */}
+    <dialog 
+      id="news-form-modal" 
+      closedby="any"
+      class="fixed inset-0 bg-transparent p-4 border-none outline-none open:flex justify-center items-center backdrop:bg-gray-900/80 backdrop:backdrop-blur-sm"
+    >
+      <div class="bg-white w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h2 id="form-modal-title" class="text-2xl font-extrabold text-gray-900">Tambah Berita</h2>
+            <p class="text-sm font-medium text-gray-500 mt-1">Lengkapi data berita di bawah ini.</p>
+          </div>
+          <button id="close-news-form-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <form id="news-form" class="space-y-5">
+          <input type="hidden" id="news-form-id" />
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Judul Berita</label>
+            <input 
+              required 
+              type="text" 
+              id="news-form-title"
+              placeholder="Masukkan judul berita" 
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">Kategori</label>
+              <input 
+                required 
+                type="text" 
+                id="news-form-category"
+                placeholder="Contoh: Advokasi, Internal" 
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">Tanggal</label>
+              <input 
+                required 
+                type="text" 
+                id="news-form-date"
+                placeholder="Contoh: 15 Jan 2026" 
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Tags (pisahkan dengan koma)</label>
+            <input 
+              required 
+              type="text" 
+              id="news-form-tags"
+              placeholder="Contoh: Kebijakan, Kampus, Mahasiswa" 
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Upload Thumbnail/Foto Berita</label>
+            <input 
+              type="file" 
+              id="news-form-image-file" 
+              accept="image/*"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
+            />
+            <p class="text-xs text-gray-400 mt-1">Gambar akan diunggah dan disimpan ke folder server <code>public/uploads/</code>.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">URL Gambar (Opsional jika mengunggah file)</label>
+            <input 
+              type="text" 
+              id="news-form-image"
+              placeholder="Masukkan URL gambar jika ada" 
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Ringkasan Singkat (Excerpt)</label>
+            <textarea 
+              required 
+              id="news-form-excerpt"
+              rows="2"
+              placeholder="Tuliskan ringkasan singkat..." 
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800 resize-none"
+            ></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Konten Lengkap Berita</label>
+            <textarea 
+              required 
+              id="news-form-content"
+              rows="4"
+              placeholder="Tuliskan isi lengkap berita..." 
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            ></textarea>
+          </div>
+          
+          <button type="submit" class="w-full mt-6 py-4 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-lg cursor-pointer">
+            Simpan Berita
+          </button>
+        </form>
+      </div>
+    </dialog>
+  </div>
+</Layout>
+
+<script>
+  interface NewsItem {
+    id: number;
+    title: string;
+    category: string;
+    date: string;
+    excerpt: string;
+    image: string;
+    tags: string[];
+    content?: string;
+  }
+
+  function setupProkerInteractions() {
+    const container = document.getElementById('news-grid-container');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+    // Show/Hide Admin Controls globally
+    const adminControls = document.querySelectorAll('.admin-only');
+    adminControls.forEach(el => {
+      if (isAdmin) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    });
+
+    if (!container) return;
+
+    // Load pre-rendered news from initial-data attribute
+    const initialData = container.getAttribute('data-initial') || '[]';
+    let newsList: NewsItem[] = JSON.parse(initialData);
+
+    // CRUD Helper functions
+    async function deleteNews(id: number) {
+      const res = await fetch(`/api/news?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert('Gagal menghapus berita dari server.');
+      }
+    }
+
+    // Preview Modal logic
+    const previewModal = document.getElementById('news-preview-modal') as HTMLDialogElement | null;
+    const closePreviewBtn = document.getElementById('close-preview-btn');
+
+    function openPreviewModal(news: NewsItem) {
+      if (!previewModal) return;
+
+      const categoryEl = document.getElementById('preview-category');
+      const dateEl = document.getElementById('preview-date');
+      const titleEl = document.getElementById('preview-title');
+      const imageEl = document.getElementById('preview-image') as HTMLImageElement | null;
+      const tagsEl = document.getElementById('preview-tags');
+      const excerptEl = document.getElementById('preview-excerpt');
+      const contentEl = document.getElementById('preview-content');
+
+      if (categoryEl) categoryEl.textContent = news.category;
+      if (dateEl) dateEl.textContent = news.date;
+      if (titleEl) titleEl.textContent = news.title;
+      if (imageEl) {
+        imageEl.src = news.image;
+        imageEl.alt = news.title;
+      }
+      if (excerptEl) excerptEl.textContent = news.excerpt;
+      
+      if (tagsEl) {
+        tagsEl.innerHTML = news.tags.map(tag => `
+          <span class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg uppercase tracking-wider">#${tag}</span>
+        `).join('');
+      }
+
+      if (contentEl) {
+        contentEl.innerHTML = '';
+        if (news.content) {
+          const paragraphs = news.content.split('\n').filter(p => p.trim());
+          paragraphs.forEach(p => {
+            const pEl = document.createElement('p');
+            pEl.textContent = p;
+            contentEl.appendChild(pEl);
+          });
+        }
+      }
+
+      previewModal.showModal();
+      document.body.classList.add('overflow-hidden');
+    }
+
+    if (previewModal && closePreviewBtn) {
+      const closeHandler = () => {
+        previewModal.close();
+        document.body.classList.remove('overflow-hidden');
+      };
+
+      closePreviewBtn.addEventListener('click', closeHandler);
+      previewModal.addEventListener('click', (event) => {
+        if (event.target === previewModal) closeHandler();
+      });
+    }
+
+    // Attach listeners to pre-rendered news cards
+    const cards = container.querySelectorAll('.news-card');
+    cards.forEach(card => {
+      const newsId = parseInt(card.getAttribute('data-id') || '0');
+      const news = newsList.find(n => n.id === newsId);
+      if (!news) return;
+
+      // Add click to card (except buttons)
+      card.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.edit-news-btn') && !target.closest('.delete-news-btn')) {
+          openPreviewModal(news);
+        }
+      });
+
+      card.querySelector('.edit-news-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openFormModal(news);
+      });
+
+      card.querySelector('.delete-news-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm(`Apakah Anda yakin ingin menghapus berita "${news.title}"?`)) {
+          deleteNews(news.id);
+        }
+      });
+    });
+
+    // Form Modal logic (Add/Edit)
+    const newsFormModal = document.getElementById('news-form-modal') as HTMLDialogElement | null;
+    const addNewsBtn = document.getElementById('add-news-btn');
+    const closeFormBtn = document.getElementById('close-news-form-btn');
+    const newsForm = document.getElementById('news-form') as HTMLFormElement | null;
+    const fileInput = document.getElementById('news-form-image-file') as HTMLInputElement | null;
+
+    function openFormModal(news: NewsItem | null = null) {
+      if (!newsFormModal || !newsForm) return;
+
+      const titleHeader = document.getElementById('form-modal-title');
+      const idInput = document.getElementById('news-form-id') as HTMLInputElement | null;
+      const titleInput = document.getElementById('news-form-title') as HTMLInputElement | null;
+      const categoryInput = document.getElementById('news-form-category') as HTMLInputElement | null;
+      const dateInput = document.getElementById('news-form-date') as HTMLInputElement | null;
+      const tagsInput = document.getElementById('news-form-tags') as HTMLInputElement | null;
+      const imageInput = document.getElementById('news-form-image') as HTMLInputElement | null;
+      const excerptInput = document.getElementById('news-form-excerpt') as HTMLTextAreaElement | null;
+      const contentInput = document.getElementById('news-form-content') as HTMLTextAreaElement | null;
+
+      if (news) {
+        if (titleHeader) titleHeader.textContent = "Edit Berita";
+        if (idInput) idInput.value = news.id.toString();
+        if (titleInput) titleInput.value = news.title;
+        if (categoryInput) categoryInput.value = news.category;
+        if (dateInput) dateInput.value = news.date;
+        if (tagsInput) tagsInput.value = news.tags.join(', ');
+        if (imageInput) imageInput.value = news.image;
+        if (excerptInput) excerptInput.value = news.excerpt;
+        if (contentInput) contentInput.value = news.content || '';
+      } else {
+        if (titleHeader) titleHeader.textContent = "Tambah Berita";
+        newsForm.reset();
+        if (idInput) idInput.value = '';
+        
+        if (dateInput) {
+          const today = new Date();
+          const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+          dateInput.value = `${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+        }
+      }
+
+      newsFormModal.showModal();
+    }
+
+    if (addNewsBtn) addNewsBtn.addEventListener('click', () => openFormModal(null));
+    if (closeFormBtn) closeFormBtn.addEventListener('click', () => newsFormModal?.close());
+
+    if (newsForm) {
+      newsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const idVal = (document.getElementById('news-form-id') as HTMLInputElement).value;
+        const titleVal = (document.getElementById('news-form-title') as HTMLInputElement).value;
+        const categoryVal = (document.getElementById('news-form-category') as HTMLInputElement).value;
+        const dateVal = (document.getElementById('news-form-date') as HTMLInputElement).value;
+        const tagsVal = (document.getElementById('news-form-tags') as HTMLInputElement).value;
+        const imageVal = (document.getElementById('news-form-image') as HTMLInputElement).value;
+        const excerptVal = (document.getElementById('news-form-excerpt') as HTMLTextAreaElement).value;
+        const contentVal = (document.getElementById('news-form-content') as HTMLTextAreaElement).value;
+
+        const docId = idVal ? parseInt(idVal) : Date.now();
+        const tagsArray = tagsVal.split(',').map(t => t.trim()).filter(t => t);
+
+        const defaultPlaceholder = "https://images.unsplash.com/photo-1540317580384-e5d43867caa6?auto=format&fit=crop&w=600&q=80";
+        let uploadedImageUrl = imageVal || defaultPlaceholder;
+
+        // Upload image file to server public/uploads/ if provided
+        const file = fileInput?.files?.[0];
+        if (file) {
+          const uploadData = new FormData();
+          uploadData.append('file', file);
+          try {
+            const uploadRes = await fetch('/api/upload', {
+              method: 'POST',
+              body: uploadData
+            });
+            if (uploadRes.ok) {
+              const uploadJson = await uploadRes.json();
+              uploadedImageUrl = uploadJson.fileUrl;
+            }
+          } catch (err) {
+            console.error("Physical image upload failed", err);
+          }
+        }
+
+        const entry: NewsItem = {
+          id: docId,
+          title: titleVal,
+          category: categoryVal,
+          date: dateVal,
+          tags: tagsArray,
+          image: uploadedImageUrl,
+          excerpt: excerptVal,
+          content: contentVal
+        };
+
+        const res = await fetch('/api/news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry)
+        });
+
+        if (res.ok) {
+          newsFormModal?.close();
+          window.location.reload();
+        } else {
+          alert('Gagal menyimpan berita ke server.');
+        }
+      });
+    }
+  }
+
+  setupProkerInteractions();
+  document.addEventListener('astro:after-swap', setupProkerInteractions);
+</script>
