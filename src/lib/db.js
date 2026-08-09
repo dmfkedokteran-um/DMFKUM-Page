@@ -1,13 +1,28 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+function getDbCredentials() {
+  const url = process.env.UPSTASH_REDIS_REST_URL ||
+              process.env.KV_REST_API_URL ||
+              process.env.STORAGE_REST_API_URL ||
+              process.env.STORAGE_URL ||
+              process.env.KV_URL;
+
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN ||
+                process.env.KV_REST_API_TOKEN ||
+                process.env.STORAGE_REST_API_TOKEN ||
+                process.env.STORAGE_TOKEN ||
+                process.env.KV_TOKEN;
+
+  return { url, token };
+}
+
 /**
  * Reads data from Cloud Database (Upstash Redis REST) if environment variables are set,
  * otherwise falls back to reading local JSON files in /database/ folder.
  */
 export async function readCloudDB(key, fallbackData) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const { url, token } = getDbCredentials();
 
   if (url && token) {
     try {
@@ -41,8 +56,7 @@ export async function readCloudDB(key, fallbackData) {
  * and updates local JSON files in /database/ if local environment allows.
  */
 export async function writeCloudDB(key, data) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const { url, token } = getDbCredentials();
 
   if (url && token) {
     try {
