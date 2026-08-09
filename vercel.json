@@ -1,7 +1,3 @@
 {
-  "functions": {
-    "src/pages/api/*.js": {
-      "includeFiles": "database/**"
-    }
-  }
+  "cleanUrls": true
 }
