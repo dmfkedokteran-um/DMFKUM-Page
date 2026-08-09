@@ -153,7 +153,7 @@ const org = siteSettings.orgStructure;
           <Eye class="h-6 w-6 text-rose-600" />
         </div>
         <h2 class="text-2xl font-extrabold text-gray-900 mb-3">Visi Utama</h2>
-        <p class="text-gray-600 text-base leading-relaxed font-medium">
+        <p id="profile-visi-text" class="text-gray-600 text-base leading-relaxed font-medium">
           {siteSettings.visi}
         </p>
       </div>
@@ -164,7 +164,7 @@ const org = siteSettings.orgStructure;
           <Users class="h-6 w-6 text-blue-600" />
         </div>
         <h2 class="text-2xl font-extrabold text-gray-900 mb-3">Misi Strategis</h2>
-        <ul class="space-y-3">
+        <ul id="profile-misi-list" class="space-y-3">
           {siteSettings.misi.map((item) => (
             <li class="flex items-start gap-3">
               <div class="bg-blue-100 p-1 rounded-full mt-1.5 shrink-0">
@@ -214,11 +214,11 @@ const org = siteSettings.orgStructure;
         {/* Highlighted Badge Nama Parlemen Berjalan */}
         <div class="inline-flex items-center gap-2 py-1.5 px-5 rounded-full bg-gradient-to-r from-rose-500/30 via-amber-500/25 to-rose-500/30 backdrop-blur-md border border-amber-300/40 text-amber-200 text-xs font-extrabold mb-3 tracking-wider uppercase shadow-lg shadow-amber-500/10">
           <Award class="h-4 w-4 text-amber-300 shrink-0" />
-          <span>{siteSettings.parliamentName || 'Parlemen Nawa Cita 2026'}</span>
+          <span id="profile-parliament-name">{siteSettings.parliamentName || 'Parlemen Nawa Cita 2026'}</span>
         </div>
 
-        <h2 class="text-3xl sm:text-5xl font-extrabold mb-3 leading-tight tracking-tight">{siteSettings.orgTitle || 'Struktur Kepengurusan 2026'}</h2>
-        <p class="text-base sm:text-lg text-rose-100/90 max-w-xl mx-auto font-light leading-relaxed">
+        <h2 id="profile-org-title" class="text-3xl sm:text-5xl font-extrabold mb-3 leading-tight tracking-tight">{siteSettings.orgTitle || 'Struktur Kepengurusan 2026'}</h2>
+        <p id="profile-org-subtitle" class="text-base sm:text-lg text-rose-100/90 max-w-xl mx-auto font-light leading-relaxed">
           {siteSettings.orgSubtitle || 'Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM'}
         </p>
 
@@ -582,6 +582,47 @@ const org = siteSettings.orgStructure;
 <script>
   function setupProfileAdmin() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+    // ✅ Apply localStorage settings overrides on page load
+    const cachedSettings = localStorage.getItem('dmfk_settings');
+    if (cachedSettings) {
+      try {
+        const s = JSON.parse(cachedSettings);
+        if (s.visi) {
+          const el = document.getElementById('profile-visi-text');
+          if (el) el.textContent = s.visi;
+        }
+        if (s.misi && Array.isArray(s.misi)) {
+          const ul = document.getElementById('profile-misi-list');
+          if (ul) {
+            ul.innerHTML = s.misi.map((item: string) => `
+              <li class="flex items-start gap-3">
+                <div class="bg-blue-100 p-1 rounded-full mt-1.5 shrink-0">
+                  <div class="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                </div>
+                <span class="text-gray-600 text-base font-medium leading-normal">${item}</span>
+              </li>
+            `).join('');
+          }
+        }
+        if (s.parliamentName) {
+          const el = document.getElementById('profile-parliament-name');
+          if (el) el.textContent = s.parliamentName;
+        }
+        if (s.orgTitle) {
+          const el = document.getElementById('profile-org-title');
+          if (el) el.textContent = s.orgTitle;
+        }
+        if (s.orgSubtitle) {
+          const el = document.getElementById('profile-org-subtitle');
+          if (el) el.textContent = s.orgSubtitle;
+        }
+        if (s.orgBgImage) {
+          const el = document.getElementById('org-hero-bg');
+          if (el) (el as HTMLElement).style.backgroundImage = `url('${s.orgBgImage}')`;
+        }
+      } catch (e) {}
+    }
 
     // Show/Hide Admin Edit Controls
     const adminControls = document.querySelectorAll('.admin-only');

@@ -46,18 +46,19 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
       {/* Email */}
-      <a href={`mailto:${siteSettings.contactEmail}`} class="group bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] hover:-translate-y-1 transition-all duration-300 border border-gray-50 flex items-center gap-6">
+      <a id="contact-email-link" href={`mailto:${siteSettings.contactEmail}`} class="group bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] hover:-translate-y-1 transition-all duration-300 border border-gray-50 flex items-center gap-6">
         <div class="bg-rose-50 text-rose-600 p-5 rounded-3xl group-hover:scale-110 transition-transform">
           <Mail class="h-8 w-8" />
         </div>
         <div>
           <h3 class="font-extrabold text-2xl text-gray-900 mb-1">Email Resmi</h3>
-          <p class="text-gray-500 font-medium text-lg group-hover:text-rose-600 transition-colors">{siteSettings.contactEmail}</p>
+          <p id="contact-email-text" class="text-gray-500 font-medium text-lg group-hover:text-rose-600 transition-colors">{siteSettings.contactEmail}</p>
         </div>
       </a>
 
       {/* WhatsApp */}
       <a 
+        id="contact-wa-link"
         href={waUrl} 
         target="_blank" 
         rel="noopener noreferrer"
@@ -68,12 +69,13 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
         </div>
         <div>
           <h3 class="font-extrabold text-2xl text-gray-900 mb-1">WhatsApp</h3>
-          <p class="text-gray-500 font-medium text-lg group-hover:text-emerald-600 transition-colors">{siteSettings.contactPhone}</p>
+          <p id="contact-phone-text" class="text-gray-500 font-medium text-lg group-hover:text-emerald-600 transition-colors">{siteSettings.contactPhone}</p>
         </div>
       </a>
 
       {/* Instagram */}
       <a 
+        id="contact-ig-link"
         href={igUrl} 
         target="_blank" 
         rel="noopener noreferrer"
@@ -84,12 +86,13 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
         </div>
         <div>
           <h3 class="font-extrabold text-2xl text-gray-900 mb-1">Instagram</h3>
-          <p class="text-gray-500 font-medium text-lg group-hover:text-fuchsia-600 transition-colors">{siteSettings.contactInstagram}</p>
+          <p id="contact-ig-text" class="text-gray-500 font-medium text-lg group-hover:text-fuchsia-600 transition-colors">{siteSettings.contactInstagram}</p>
         </div>
       </a>
 
       {/* Linktree */}
       <a 
+        id="contact-lt-link"
         href={linktreeUrl} 
         target="_blank" 
         rel="noopener noreferrer"
@@ -100,13 +103,13 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
         </div>
         <div>
           <h3 class="font-extrabold text-2xl text-gray-900 mb-1">Linktree</h3>
-          <p class="text-gray-500 font-medium text-lg group-hover:text-blue-600 transition-colors">{siteSettings.contactLinktree}</p>
+          <p id="contact-lt-text" class="text-gray-500 font-medium text-lg group-hover:text-blue-600 transition-colors">{siteSettings.contactLinktree}</p>
         </div>
       </a>
     </div>
 
     <div class="bg-gray-50/50 border border-gray-100 rounded-3xl p-8 text-center text-gray-600 font-medium">
-      <p><strong class="text-gray-900">Sekretariat DMFK UM:</strong> {siteSettings.contactAddress}</p>
+      <p><strong class="text-gray-900">Sekretariat DMFK UM:</strong> <span id="contact-address-text">{siteSettings.contactAddress}</span></p>
     </div>
 
     {/* Admin Modal Edit Informasi Kontak */}
@@ -194,6 +197,50 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
 <script>
   function setupContactAdmin() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+    // ✅ Apply localStorage contact info overrides on page load
+    const cachedSettings = localStorage.getItem('dmfk_settings');
+    if (cachedSettings) {
+      try {
+        const s = JSON.parse(cachedSettings);
+        if (s.contactEmail) {
+          const el = document.getElementById('contact-email-text');
+          const link = document.getElementById('contact-email-link') as HTMLAnchorElement | null;
+          if (el) el.textContent = s.contactEmail;
+          if (link) link.href = `mailto:${s.contactEmail}`;
+        }
+        if (s.contactPhone) {
+          const el = document.getElementById('contact-phone-text');
+          const link = document.getElementById('contact-wa-link') as HTMLAnchorElement | null;
+          if (el) el.textContent = s.contactPhone;
+          if (link) {
+            const cleaned = s.contactPhone.replace(/\D/g, '');
+            const formatted = cleaned.startsWith('0') ? '62' + cleaned.slice(1) : cleaned;
+            const msg = encodeURIComponent('Halo DMFK UM, selamat [pagi/siang/sore]. Saya [Nama] dari [Fakultas], izin meminta bantuan dan informasi terkait [sebutkan keperluan secara singkat]. Mohon arahannya, terima kasih.');
+            link.href = `https://api.whatsapp.com/send?phone=${formatted}&text=${msg}`;
+          }
+        }
+        if (s.contactInstagram) {
+          const el = document.getElementById('contact-ig-text');
+          const link = document.getElementById('contact-ig-link') as HTMLAnchorElement | null;
+          if (el) el.textContent = s.contactInstagram;
+          if (link) {
+            const handle = s.contactInstagram.replace('@', '').trim();
+            link.href = s.contactInstagram.startsWith('http') ? s.contactInstagram : `https://instagram.com/${handle}`;
+          }
+        }
+        if (s.contactLinktree) {
+          const el = document.getElementById('contact-lt-text');
+          const link = document.getElementById('contact-lt-link') as HTMLAnchorElement | null;
+          if (el) el.textContent = s.contactLinktree;
+          if (link) link.href = s.contactLinktree.startsWith('http') ? s.contactLinktree : `https://${s.contactLinktree}`;
+        }
+        if (s.contactAddress) {
+          const el = document.getElementById('contact-address-text');
+          if (el) el.textContent = s.contactAddress;
+        }
+      } catch (e) {}
+    }
 
     // Show/Hide Admin Controls
     const adminControls = document.querySelectorAll('.admin-only');
