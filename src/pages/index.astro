@@ -278,7 +278,7 @@ const docsList = defaultDocsData || MOCK_DOCS;
     // Helper to render home news
     function renderHomeNews(items: any[]) {
       const container = document.getElementById('home-news-container');
-      if (!container) return;
+      if (!container || !Array.isArray(items) || items.length === 0) return;
       const top3 = items.slice(0, 3);
       container.innerHTML = top3.map(news => `
         <div class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/50 flex flex-col">
@@ -303,7 +303,7 @@ const docsList = defaultDocsData || MOCK_DOCS;
     // Helper to render home docs
     function renderHomeDocs(items: any[]) {
       const container = document.getElementById('home-docs-container');
-      if (!container) return;
+      if (!container || !Array.isArray(items) || items.length === 0) return;
       const top3 = items.slice(0, 3);
       container.innerHTML = top3.map(doc => `
         <div class="bg-white p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow">
