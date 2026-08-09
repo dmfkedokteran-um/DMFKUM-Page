@@ -1,42 +1,53 @@
-import { g as getDbCredentials } from '../../chunks/db_BvO21iA9.mjs';
+import { g as getDbCredentials } from '../../chunks/db_WxbIN8UU.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
 
 async function GET() {
-  const { url, token } = getDbCredentials();
-
+  let hasUrl = false;
+  let hasToken = false;
+  let urlPreview = null;
   let rawResponse = null;
   let fetchError = null;
+  let kvKeys = [];
 
-  if (url && token) {
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(["GET", "dmfk_news"])
-      });
+  try {
+    const { url, token } = getDbCredentials();
+    hasUrl = !!url;
+    hasToken = !!token;
+    urlPreview = url ? url.substring(0, 30) + '...' : null;
 
-      const text = await res.text();
-      rawResponse = { status: res.status, text };
-    } catch (err) {
-      fetchError = String(err);
+    const allEnvKeys = Object.keys(process.env || {});
+    kvKeys = allEnvKeys.filter(k => 
+      k.includes('KV') || k.includes('REDIS') || k.includes('UPSTASH') || k.includes('STORAGE')
+    );
+
+    if (url && token && (url.startsWith('http://') || url.startsWith('https://'))) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(["GET", "dmfk_news"])
+        });
+
+        const text = await res.text();
+        rawResponse = { status: res.status, text };
+      } catch (err) {
+        fetchError = String(err);
+      }
     }
+  } catch (err) {
+    fetchError = String(err);
   }
-
-  const allEnvKeys = Object.keys(process.env);
-  const kvKeys = allEnvKeys.filter(k => 
-    k.includes('KV') || k.includes('REDIS') || k.includes('UPSTASH') || k.includes('STORAGE')
-  );
 
   return new Response(JSON.stringify({
     status: 'ok',
-    hasUrl: !!url,
-    hasToken: !!token,
-    urlPreview: url ? url.substring(0, 25) + '...' : null,
+    hasUrl,
+    hasToken,
+    urlPreview,
     foundKvKeys: kvKeys,
     rawResponse,
     fetchError,

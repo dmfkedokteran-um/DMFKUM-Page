@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-export function getDbCredentials() {
+function getDbCredentials() {
   let url = process.env.UPSTASH_REDIS_REST_URL ||
             process.env.KV_REST_API_URL ||
             process.env.STORAGE_KV_REST_API_URL ||
@@ -44,7 +44,7 @@ export function getDbCredentials() {
  * Reads data from Cloud Database (Upstash Redis REST / Vercel KV).
  * Returns { data, isCloud: boolean }.
  */
-export async function readCloudDB(key, fallbackData) {
+async function readCloudDB(key, fallbackData) {
   try {
     const { url, token } = getDbCredentials();
 
@@ -89,7 +89,7 @@ export async function readCloudDB(key, fallbackData) {
 /**
  * Writes data to Cloud Database (Upstash Redis REST / Vercel KV).
  */
-export async function writeCloudDB(key, data) {
+async function writeCloudDB(key, data) {
   try {
     const { url, token } = getDbCredentials();
 
@@ -120,3 +120,5 @@ export async function writeCloudDB(key, data) {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {}
 }
+
+export { getDbCredentials as g, readCloudDB as r, writeCloudDB as w };
