@@ -1,6 +1,3 @@
-import fs from 'fs/promises';
-import path from 'path';
-
 export function getDbCredentials() {
   let url = process.env.UPSTASH_REDIS_REST_URL ||
             process.env.KV_REST_API_URL ||
@@ -14,14 +11,14 @@ export function getDbCredentials() {
               process.env.STORAGE_REST_API_TOKEN ||
               process.env.STORAGE_TOKEN;
 
-  // Enforce HTTP/HTTPS REST endpoint URL only (ignore redis:// TCP connection strings)
+  // Enforce HTTP/HTTPS REST endpoint URL only
   if (url && typeof url === 'string' && !url.startsWith('http://') && !url.startsWith('https://')) {
     url = null;
   }
 
   // Dynamic fallback scanner over process.env if standard names differ
   if (!url || !token) {
-    for (const [key, value] of Object.entries(process.env)) {
+    for (const [key, value] of Object.entries(process.env || {})) {
       if (!value || typeof value !== 'string') continue;
       const upper = key.toUpperCase();
       if (!url && upper.includes('REST') && upper.includes('URL')) {
@@ -76,8 +73,10 @@ export async function readCloudDB(key, fallbackData) {
     console.error(`[CloudDB] GET dmfk_${key} global error:`, globalErr);
   }
 
-  // Local filesystem fallback
+  // Local filesystem fallback (dynamic import for serverless compatibility)
   try {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
     const filePath = path.resolve(process.cwd(), `database/${key}.json`);
     const data = await fs.readFile(filePath, 'utf-8');
     return { data: JSON.parse(data), isCloud: false };
@@ -113,8 +112,10 @@ export async function writeCloudDB(key, data) {
     console.error(`[CloudDB] SET dmfk_${key} global error:`, globalErr);
   }
 
-  // Local filesystem fallback write
+  // Local filesystem fallback write (dynamic import for serverless compatibility)
   try {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
     const filePath = path.resolve(process.cwd(), `database/${key}.json`);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');

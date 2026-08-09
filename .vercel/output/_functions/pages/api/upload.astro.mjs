@@ -1,8 +1,8 @@
-import fs from 'fs/promises';
-import path from 'path';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
+
+
 
 function formatBytes(bytes, decimals = 1) {
   if (!bytes || bytes === 0) return '0 Bytes';
@@ -33,6 +33,9 @@ async function POST({ request }) {
     // Sanitize filename and create unique timestamped filename
     const sanitizedBase = baseName.replace(/[^a-zA-Z0-9_-]/g, '_');
     const filename = `${Date.now()}_${sanitizedBase}${ext ? '.' + ext : ''}`;
+
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
 
     // Target upload directory in public/uploads
     const targetDir = path.resolve(process.cwd(), 'public/uploads');

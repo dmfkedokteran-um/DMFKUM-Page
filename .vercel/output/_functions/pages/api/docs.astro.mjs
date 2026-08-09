@@ -1,4 +1,4 @@
-import { r as readCloudDB, w as writeCloudDB } from '../../chunks/db_WxbIN8UU.mjs';
+import { r as readCloudDB, w as writeCloudDB } from '../../chunks/db_DX2jmjHT.mjs';
 import { d as defaultDocsData } from '../../chunks/docs_CiNyoO0-.mjs';
 export { renderers } from '../../renderers.mjs';
 
@@ -12,12 +12,16 @@ async function writeDB(data) {
 // Delete physical upload file from disk
 async function deletePhysicalUploadFile(fileUrl) {
   if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.startsWith('/uploads/')) return;
-  const fileName = fileUrl.replace('/uploads/', '');
-  const publicPath = path.resolve(process.cwd(), 'public/uploads', fileName);
-  const distPath = path.resolve(process.cwd(), 'dist/client/uploads', fileName);
+  try {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const fileName = fileUrl.replace('/uploads/', '');
+    const publicPath = path.resolve(process.cwd(), 'public/uploads', fileName);
+    const distPath = path.resolve(process.cwd(), 'dist/client/uploads', fileName);
 
-  try { await fs.unlink(publicPath); } catch (e) {}
-  try { await fs.unlink(distPath); } catch (e) {}
+    try { await fs.unlink(publicPath); } catch (e) {}
+    try { await fs.unlink(distPath); } catch (e) {}
+  } catch (_) {}
 }
 
 async function GET() {
