@@ -6,7 +6,7 @@ import { MOCK_NEWS } from '../data/mockData.js';
 import defaultNewsData from "../../database/news.json";
 import defaultSettingsData from "../../database/settings.json";
 
-const newsList = defaultNewsData || MOCK_NEWS;
+const newsList = defaultNewsData && Array.isArray(defaultNewsData) ? defaultNewsData : [];
 const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgStructure?.komisi || [];
 ---
 

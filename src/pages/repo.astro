@@ -6,7 +6,7 @@ import { MOCK_DOCS } from '../data/mockData.js';
 import defaultDocsData from "../../database/docs.json";
 
 const categories = ["Semua", "Regulasi", "Laporan", "Panduan", "Materi Publik"];
-const docs = defaultDocsData || MOCK_DOCS;
+const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData : [];
 ---
 
 <Layout title="Repositori Berkas - DMFK UM" description="Pusat pangkalan data publik resmi DMFK UM. Temukan, pratinjau, dan unduh dokumen resmi organisasi secara instan.">
