@@ -1077,6 +1077,18 @@ const org = siteSettings.orgStructure;
     function renderOrgFormInputs() {
       if (!orgForm) return;
 
+      // Pembina Render
+      if (localOrgData.pembina) {
+        const titleEl = document.getElementById('pembina-title') as HTMLInputElement | null;
+        const nameEl = document.getElementById('pembina-name') as HTMLInputElement | null;
+        const nipEl = document.getElementById('pembina-nip') as HTMLInputElement | null;
+        const avatarEl = document.getElementById('pembina-avatar') as HTMLInputElement | null;
+        if (titleEl) titleEl.value = localOrgData.pembina.title || '';
+        if (nameEl) nameEl.value = localOrgData.pembina.name || '';
+        if (nipEl) nipEl.value = localOrgData.pembina.nip || '';
+        if (avatarEl) avatarEl.value = localOrgData.pembina.avatar || '';
+      }
+
       // Presidium Render
       const presContainer = document.getElementById('presidium-inputs-container');
       if (presContainer) {
