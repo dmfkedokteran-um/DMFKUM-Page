@@ -547,7 +547,7 @@ const org = siteSettings.orgStructure;
         <div class="flex justify-between items-center mb-6">
           <div>
             <h2 class="text-2xl font-extrabold text-gray-900">Kelola Bagan Organisasi & Foto Personil</h2>
-            <p class="text-sm font-medium text-gray-500 mt-1">Ubah Pembina, Presidium, BPH, dan Komisi beserta foto/avatar tiap personil.</p>
+            <p class="text-sm font-medium text-gray-500 mt-1">Ubah Pembina, Ketua & Wakil, BPH, dan Komisi beserta foto/avatar tiap personil.</p>
           </div>
           <button id="close-org-modal-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
             <X class="h-5 w-5" />
@@ -572,12 +572,12 @@ const org = siteSettings.orgStructure;
             </div>
           </div>
 
-          {/* Section 1: Presidium (Ketua / Wakil) */}
+          {/* Section 1: Ketua & Wakil Ketua */}
           <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200/80">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="font-extrabold text-gray-900 text-base">Presidium (Ketua / Wakil)</h3>
+              <h3 class="font-extrabold text-gray-900 text-base">Ketua & Wakil Ketua</h3>
               <button type="button" id="add-presidium-btn" class="text-xs font-bold bg-rose-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-rose-700 transition-colors">
-                <Plus class="h-3.5 w-3.5" /> Tambah Presidium
+                <Plus class="h-3.5 w-3.5" /> Tambah Ketua / Wakil
               </button>
             </div>
             <div id="presidium-inputs-container" class="space-y-4"></div>
