@@ -664,7 +664,7 @@ const docs = defaultDocsData || MOCK_DOCS;
           uploadedFileUrl = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
-            reader.onerror = () => resolve(uploadedFileUrl);
+            reader.onerror = () => resolve(uploadedFileUrl ?? '');
             reader.readAsDataURL(file);
           });
         }
