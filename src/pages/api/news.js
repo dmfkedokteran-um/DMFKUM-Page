@@ -41,19 +41,22 @@ export async function POST({ request }) {
     const entry = await request.json();
     const { data: news } = await readCloudDB('news', defaultNewsData);
 
+    // Check if an item with this ID actually exists (for edit vs new)
+    const existing = entry.id ? news.find(item => String(item.id) === String(entry.id)) : null;
+
     let updatedNews;
-    if (entry.id) {
-      // Find existing item to clean up replaced cover image
-      const existing = news.find(item => item.id === entry.id);
-      if (existing && existing.image !== entry.image) {
+    if (existing) {
+      // Edit: replace existing item
+      if (existing.image !== entry.image) {
         await deletePhysicalUploadFile(existing.image);
       }
-      updatedNews = news.map(item => item.id === entry.id ? { ...item, ...entry } : item);
+      updatedNews = news.map(item => String(item.id) === String(entry.id) ? { ...item, ...entry } : item);
     } else {
+      // New entry
       const newEntry = {
         ...entry,
-        id: Date.now().toString(),
-        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        id: entry.id || Date.now(),
+        date: entry.date || new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       };
       updatedNews = [newEntry, ...news];
     }

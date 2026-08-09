@@ -41,20 +41,23 @@ export async function POST({ request }) {
     const entry = await request.json();
     const { data: docs } = await readCloudDB('docs', defaultDocsData);
 
+    // Check if an item with this ID actually exists (for edit vs new)
+    const existing = entry.id ? docs.find(item => String(item.id) === String(entry.id)) : null;
+
     let updatedDocs;
-    if (entry.id) {
-      // Find existing item to clean up replaced physical document file
-      const existing = docs.find(item => item.id === entry.id);
-      if (existing && existing.fileUrl !== entry.fileUrl) {
+    if (existing) {
+      // Edit: replace existing item
+      if (existing.fileUrl !== entry.fileUrl) {
         await deletePhysicalUploadFile(existing.fileUrl);
       }
-      updatedDocs = docs.map(item => item.id === entry.id ? { ...item, ...entry } : item);
+      updatedDocs = docs.map(item => String(item.id) === String(entry.id) ? { ...item, ...entry } : item);
     } else {
+      // New entry
       const newEntry = {
         ...entry,
-        id: Date.now().toString(),
+        id: entry.id || Date.now(),
         downloads: 0,
-        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        date: entry.date || new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       };
       updatedDocs = [newEntry, ...docs];
     }
