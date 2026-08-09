@@ -2,23 +2,43 @@ import fs from 'fs/promises';
 import path from 'path';
 
 function getDbCredentials() {
-  const url = process.env.UPSTASH_REDIS_REST_URL ||
-              process.env.KV_REST_API_URL ||
-              process.env.STORAGE_REST_API_URL ||
-              process.env.STORAGE_URL ||
-              process.env.KV_URL;
+  let url = process.env.UPSTASH_REDIS_REST_URL ||
+            process.env.KV_REST_API_URL ||
+            process.env.STORAGE_KV_REST_API_URL ||
+            process.env.STORAGE_REST_API_URL ||
+            process.env.STORAGE_URL ||
+            process.env.KV_URL;
 
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN ||
-                process.env.KV_REST_API_TOKEN ||
-                process.env.STORAGE_REST_API_TOKEN ||
-                process.env.STORAGE_TOKEN ||
-                process.env.KV_TOKEN;
+  let token = process.env.UPSTASH_REDIS_REST_TOKEN ||
+              process.env.KV_REST_API_TOKEN ||
+              process.env.STORAGE_KV_REST_API_TOKEN ||
+              process.env.STORAGE_REST_API_TOKEN ||
+              process.env.STORAGE_TOKEN ||
+              process.env.KV_TOKEN;
+
+  // Dynamic fallback scanner over process.env if standard names differ
+  if (!url || !token) {
+    for (const [key, value] of Object.entries(process.env)) {
+      if (!value || typeof value !== 'string') continue;
+      const upper = key.toUpperCase();
+      if (!url && (upper.includes('STORAGE') || upper.includes('KV') || upper.includes('REDIS') || upper.includes('UPSTASH')) && upper.includes('URL')) {
+        if (value.startsWith('http://') || value.startsWith('https://')) {
+          url = value;
+        }
+      }
+      if (!token && (upper.includes('STORAGE') || upper.includes('KV') || upper.includes('REDIS') || upper.includes('UPSTASH')) && (upper.includes('TOKEN') || upper.includes('KEY') || upper.includes('SECRET'))) {
+        if (value.length > 15) {
+          token = value;
+        }
+      }
+    }
+  }
 
   return { url, token };
 }
 
 /**
- * Reads data from Cloud Database (Upstash Redis REST) if environment variables are set.
+ * Reads data from Cloud Database (Upstash Redis REST / Vercel KV) if environment variables are set.
  * Returns { data, isCloud: boolean }.
  */
 export async function readCloudDB(key, fallbackData) {
@@ -26,12 +46,19 @@ export async function readCloudDB(key, fallbackData) {
 
   if (url && token) {
     try {
-      const res = await fetch(`${url}/get/dmfk_${key}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      // POST with ["GET", "dmfk_key"] works reliably across Upstash & Vercel KV REST APIs
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(["GET", `dmfk_${key}`])
       });
+
       if (res.ok) {
         const json = await res.json();
-        if (json.result) {
+        if (json && json.result !== undefined && json.result !== null) {
           const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
           return { data: parsed, isCloud: true };
         }
@@ -52,14 +79,14 @@ export async function readCloudDB(key, fallbackData) {
 }
 
 /**
- * Writes data to Cloud Database (Upstash Redis REST) if environment variables are set.
+ * Writes data to Cloud Database (Upstash Redis REST / Vercel KV) if environment variables are set.
  */
 export async function writeCloudDB(key, data) {
   const { url, token } = getDbCredentials();
 
   if (url && token) {
     try {
-      // Upstash REST API command array format: ["SET", "dmfk_key", "stringified_data"]
+      // POST with ["SET", "dmfk_key", stringified_value] works reliably across Upstash & Vercel KV REST APIs
       await fetch(url, {
         method: 'POST',
         headers: {
