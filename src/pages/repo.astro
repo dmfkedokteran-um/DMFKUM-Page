@@ -246,7 +246,18 @@ const docs = defaultDocsData || MOCK_DOCS;
               accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx" 
               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
             />
-            <p class="text-xs text-gray-400 mt-1">File akan diunggah dan disimpan langsung ke folder server <code>public/uploads/</code>.</p>
+            <p class="text-xs text-gray-400 mt-1">Upload file fisik langsung (akan disimulasikan/disimpan ke browser).</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Atau Link Google Drive / External URL</label>
+            <input 
+              type="url" 
+              id="doc-form-url" 
+              placeholder="Paste link Google Drive (contoh: https://drive.google.com/file/d/...)" 
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            />
+            <p class="text-xs text-gray-400 mt-1">Link Google Drive akan otomatis dikonversi ke format yang sesuai.</p>
           </div>
 
           <div>
@@ -622,6 +633,36 @@ const docs = defaultDocsData || MOCK_DOCS;
       });
     }
 
+    function convertDriveUrl(url: string, mode: 'view' | 'download' = 'download'): string {
+      if (!url) return '';
+      const trimmed = url.trim();
+      const fileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileMatch) {
+        return mode === 'view' 
+          ? `https://lh3.googleusercontent.com/d/${fileMatch[1]}` 
+          : `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+      }
+      const idMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+      if (idMatch) {
+        return mode === 'view' 
+          ? `https://lh3.googleusercontent.com/d/${idMatch[1]}` 
+          : `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
+      }
+      return trimmed;
+    }
+
+    const docUrlInput = document.getElementById('doc-form-url') as HTMLInputElement | null;
+    if (docUrlInput) {
+      docUrlInput.addEventListener('blur', () => {
+        const converted = convertDriveUrl(docUrlInput.value, 'download');
+        if (converted !== docUrlInput.value.trim()) {
+          docUrlInput.value = converted;
+          docUrlInput.style.borderColor = '#16a34a';
+          setTimeout(() => docUrlInput.style.borderColor = '', 1500);
+        }
+      });
+    }
+
     function openFormModal(doc: DocItem | null = null) {
       if (!docFormModal || !docForm) return;
       const titleHeader = document.getElementById('doc-form-modal-title');
@@ -634,10 +675,12 @@ const docs = defaultDocsData || MOCK_DOCS;
         (document.getElementById('doc-form-size') as HTMLInputElement).value = doc.size;
         (document.getElementById('doc-form-date') as HTMLInputElement).value = doc.date;
         (document.getElementById('doc-form-content') as HTMLTextAreaElement).value = doc.content || '';
+        if (docUrlInput) docUrlInput.value = doc.fileUrl || '';
       } else {
         if (titleHeader) titleHeader.textContent = "Tambah Dokumen";
         docForm.reset();
         (document.getElementById('doc-form-id') as HTMLInputElement).value = '';
+        if (docUrlInput) docUrlInput.value = '';
         const dateInput = document.getElementById('doc-form-date') as HTMLInputElement;
         const today = new Date();
         const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
@@ -658,7 +701,13 @@ const docs = defaultDocsData || MOCK_DOCS;
         
         let uploadedFileUrl = existingDoc ? existingDoc.fileUrl : '';
 
-        // Convert file to base64 DataURL (works on static Vercel hosting)
+        // Handle URL input first if provided
+        const manualUrl = docUrlInput?.value.trim();
+        if (manualUrl) {
+          uploadedFileUrl = convertDriveUrl(manualUrl, 'download');
+        }
+
+        // Convert file to base64 DataURL (works on static Vercel hosting) if file attached
         const file = fileInput?.files?.[0];
         if (file) {
           uploadedFileUrl = await new Promise<string>((resolve) => {

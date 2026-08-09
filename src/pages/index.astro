@@ -304,11 +304,30 @@ const docsList = defaultDocsData || MOCK_DOCS;
       });
     }
 
+    function convertDriveUrl(url: string): string {
+      if (!url) return '';
+      const trimmed = url.trim();
+      const fileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileMatch) return `https://lh3.googleusercontent.com/d/${fileMatch[1]}`;
+      const idMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+      if (idMatch) return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+      return trimmed;
+    }
+
+    if (heroUrlInput) {
+      heroUrlInput.addEventListener('blur', () => {
+        const converted = convertDriveUrl(heroUrlInput.value);
+        if (converted !== heroUrlInput.value.trim()) {
+          heroUrlInput.value = converted;
+        }
+      });
+    }
+
     if (heroForm && heroModal) {
       heroForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        let newHeroImageUrl = heroUrlInput?.value || '';
+        let newHeroImageUrl = convertDriveUrl(heroUrlInput?.value || '');
 
         // Convert file to base64 DataURL (works on Vercel static hosting)
         const file = heroFileInput?.files?.[0];

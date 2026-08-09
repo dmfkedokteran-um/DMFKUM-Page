@@ -694,6 +694,16 @@ const org = siteSettings.orgStructure;
       });
     }
 
+    function convertDriveUrl(url: string): string {
+      if (!url) return '';
+      const trimmed = url.trim();
+      const fileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileMatch) return `https://lh3.googleusercontent.com/d/${fileMatch[1]}`;
+      const idMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+      if (idMatch) return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+      return trimmed;
+    }
+
     // 2. Org Structure Header Background & Parliament Modal
     const editOrgBgBtn = document.getElementById('edit-org-bg-btn');
     const orgBgModal = document.getElementById('org-bg-modal') as HTMLDialogElement | null;
@@ -711,14 +721,16 @@ const org = siteSettings.orgStructure;
       orgBgForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const parliamentNameVal = (document.getElementById('parliament-name-input') as HTMLInputElement)?.value.trim();
-        const parliamentLogoUrlInput = (document.getElementById('parliament-logo-url-input') as HTMLInputElement)?.value.trim();
+        const rawParliamentLogoUrlInput = (document.getElementById('parliament-logo-url-input') as HTMLInputElement)?.value.trim();
+        const parliamentLogoUrlInput = convertDriveUrl(rawParliamentLogoUrlInput);
         const parliamentLogoFileInput = document.getElementById('parliament-logo-file-input') as HTMLInputElement | null;
         
         const finalParliamentLogo = await uploadFileIfSelected(parliamentLogoFileInput, parliamentLogoUrlInput);
 
         const titleVal = (document.getElementById('org-title-input') as HTMLInputElement)?.value.trim();
         const subtitleVal = (document.getElementById('org-subtitle-input') as HTMLTextAreaElement)?.value.trim();
-        const urlInput = (document.getElementById('org-bg-url-input') as HTMLInputElement)?.value.trim();
+        const rawUrlInput = (document.getElementById('org-bg-url-input') as HTMLInputElement)?.value.trim();
+        const urlInput = convertDriveUrl(rawUrlInput);
         const fileInput = document.getElementById('org-bg-file-input') as HTMLInputElement | null;
         
         const finalBgUrl = await uploadFileIfSelected(fileInput, urlInput);

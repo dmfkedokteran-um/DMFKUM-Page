@@ -443,6 +443,38 @@ const newsList = defaultNewsData || MOCK_NEWS;
     if (addNewsBtn) addNewsBtn.addEventListener('click', () => openFormModal(null));
     if (closeFormBtn) closeFormBtn.addEventListener('click', () => newsFormModal?.close());
 
+    // ✅ Auto-convert Google Drive sharing links to direct view URLs
+    function convertDriveUrl(url: string, mode: 'view' | 'download' = 'view'): string {
+      if (!url) return '';
+      const trimmed = url.trim();
+      const fileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileMatch) {
+        return mode === 'view' 
+          ? `https://lh3.googleusercontent.com/d/${fileMatch[1]}` 
+          : `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+      }
+      const idMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+      if (idMatch) {
+        return mode === 'view' 
+          ? `https://lh3.googleusercontent.com/d/${idMatch[1]}` 
+          : `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
+      }
+      return trimmed;
+    }
+
+    // Attach auto-converter to image URL input
+    const imageUrlInput = document.getElementById('news-form-image') as HTMLInputElement | null;
+    if (imageUrlInput) {
+      imageUrlInput.addEventListener('blur', () => {
+        const converted = convertDriveUrl(imageUrlInput.value);
+        if (converted !== imageUrlInput.value.trim()) {
+          imageUrlInput.value = converted;
+          imageUrlInput.style.borderColor = '#16a34a';
+          setTimeout(() => imageUrlInput.style.borderColor = '', 1500);
+        }
+      });
+    }
+
     if (newsForm) {
       newsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -451,7 +483,8 @@ const newsList = defaultNewsData || MOCK_NEWS;
         const categoryVal = (document.getElementById('news-form-category') as HTMLInputElement).value;
         const dateVal = (document.getElementById('news-form-date') as HTMLInputElement).value;
         const tagsVal = (document.getElementById('news-form-tags') as HTMLInputElement).value;
-        const imageVal = (document.getElementById('news-form-image') as HTMLInputElement).value;
+        const rawImageVal = (document.getElementById('news-form-image') as HTMLInputElement).value;
+        const imageVal = convertDriveUrl(rawImageVal, 'view');
         const excerptVal = (document.getElementById('news-form-excerpt') as HTMLTextAreaElement).value;
         const contentVal = (document.getElementById('news-form-content') as HTMLTextAreaElement).value;
 
