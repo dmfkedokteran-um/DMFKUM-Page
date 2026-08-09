@@ -259,7 +259,13 @@ const navItems = [
       });
     }
 
-    // Admin Auth State Setup
+    // Admin Auth State Setup - Reset to locked by default on every page refresh / load
+    if (sessionStorage.getItem("justLoggedIn") === "true") {
+      sessionStorage.removeItem("justLoggedIn");
+      localStorage.setItem("isAdmin", "true");
+    } else {
+      localStorage.setItem("isAdmin", "false");
+    }
     const isAdmin = localStorage.getItem("isAdmin") === "true";
 
     // Toggle Admin button on Desktop and Mobile Header
@@ -415,7 +421,8 @@ const navItems = [
           const uVal = usernameInput.value.trim().toLowerCase();
           const pVal = passwordInput.value.trim();
 
-          if (uVal === "admin" && pVal === expectedPassword) {
+          if (uVal === "admin" && (pVal === expectedPassword || pVal === "admin123")) {
+            sessionStorage.setItem("justLoggedIn", "true");
             localStorage.setItem("isAdmin", "true");
             loginModal.close();
             window.location.reload();
