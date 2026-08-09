@@ -115,6 +115,9 @@ const DEFAULT_PROFILE_SETTINGS = {
   parliamentLogo: "",
   orgTitle: "Struktur Kepengurusan 2026",
   orgSubtitle: "Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM",
+  aboutTag: "Tentang Kami",
+  aboutTitle: "Identitas & Tujuan",
+  aboutDesc: "Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.",
   visi: "Menjadi organisasi pelopor yang inovatif, transparan, dan berdampak nyata bagi pembangunan kapasitas masyarakat dan kemajuan keilmuan nasional pada tahun 2030.",
   misi: [
     "Mengembangkan program kerja berbasis riset & pengabdian.",
@@ -134,16 +137,16 @@ const org = siteSettings.orgStructure;
 <Layout title="Profil DMFK UM - Universitas Negeri Malang" description="Visi, Misi, dan Struktur Organisasi kepengurusan DMFK UM Universitas Negeri Malang.">
   <div class="py-12 px-4 max-w-7xl mx-auto animate-fade-in pb-20">
     <div class="text-center mb-10">
-      <span class="text-rose-600 font-bold tracking-wider uppercase text-xs mb-2 block animate-pulse">Tentang Kami</span>
-      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">Identitas & Tujuan</h1>
-      <p class="text-gray-500 max-w-xl mx-auto text-base leading-relaxed mb-5">Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.</p>
+      <span id="profile-identity-tag" class="text-rose-600 font-bold tracking-wider uppercase text-xs mb-2 block animate-pulse">{siteSettings.aboutTag || 'Tentang Kami'}</span>
+      <h1 id="profile-identity-title" class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">{siteSettings.aboutTitle || 'Identitas & Tujuan'}</h1>
+      <p id="profile-identity-desc" class="text-gray-500 max-w-xl mx-auto text-base leading-relaxed mb-5">{siteSettings.aboutDesc || 'Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.'}</p>
 
       {/* Admin Edit Visi & Misi Button */}
       <button 
         id="edit-profile-btn"
         class="admin-only hidden inline-flex items-center gap-2 bg-rose-600 text-white px-5 py-2.5 rounded-full font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-600/20 text-sm cursor-pointer outline-none"
       >
-        <Edit class="h-4 w-4" /> Edit Visi & Misi
+        <Edit class="h-4 w-4" /> Edit Identitas, Visi & Misi
       </button>
     </div>
 
@@ -359,7 +362,7 @@ const org = siteSettings.orgStructure;
       </div>
     </section>
 
-    {/* Admin Modal Edit Visi & Misi */}
+    {/* Admin Modal Edit Visi, Misi & Keterangan Identitas */}
     <dialog 
       id="profile-modal" 
       closedby="any"
@@ -368,38 +371,72 @@ const org = siteSettings.orgStructure;
       <div class="bg-white w-full max-w-xl rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
           <div>
-            <h2 class="text-2xl font-extrabold text-gray-900">Edit Visi & Misi</h2>
-            <p class="text-sm font-medium text-gray-500 mt-1">Perbarui visi dan poin-poin misi organisasi.</p>
+            <h2 class="text-2xl font-extrabold text-gray-900">Edit Identitas, Visi & Misi</h2>
+            <p class="text-sm font-medium text-gray-500 mt-1">Perbarui judul identitas, deskripsi, visi, dan misi organisasi.</p>
           </div>
           <button id="close-profile-modal-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
             <X class="h-5 w-5" />
           </button>
         </div>
 
-        <form id="profile-form" class="space-y-5">
+        <form id="profile-form" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Tag Subtitle</label>
+              <input 
+                type="text" 
+                id="about-tag-input"
+                value={siteSettings.aboutTag || 'Tentang Kami'}
+                placeholder="e.g. Tentang Kami"
+                class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-800"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Judul Utama</label>
+              <input 
+                type="text" 
+                id="about-title-input"
+                value={siteSettings.aboutTitle || 'Identitas & Tujuan'}
+                placeholder="e.g. Identitas & Tujuan"
+                class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-800"
+              />
+            </div>
+          </div>
+
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Visi Utama</label>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Keterangan Deskripsi</label>
+            <input 
+              type="text" 
+              id="about-desc-input"
+              value={siteSettings.aboutDesc || 'Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.'}
+              placeholder="e.g. Visi, misi, dan susunan kepengurusan..."
+              class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-800"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Visi Utama</label>
             <textarea 
               required 
               id="visi-input"
               rows="3"
-              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800 text-sm"
             >{siteSettings.visi}</textarea>
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Misi Strategis (Satu poin per baris)</label>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Misi Strategis (Satu poin per baris)</label>
             <textarea 
               required 
               id="misi-input"
-              rows="5"
+              rows="4"
               placeholder="Poin 1&#10;Poin 2&#10;Poin 3"
-              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800 text-sm"
             >{siteSettings.misi.join('\n')}</textarea>
           </div>
           
-          <button type="submit" class="w-full mt-4 py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-base cursor-pointer">
-            Simpan Visi & Misi
+          <button type="submit" class="w-full mt-2 py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-base cursor-pointer">
+            Simpan Identitas, Visi & Misi
           </button>
         </form>
       </div>
@@ -584,9 +621,21 @@ const org = siteSettings.orgStructure;
 
     function applyProfileSettingsToDOM(s: any) {
       if (!s || typeof s !== 'object') return;
+      if (s.aboutTag) {
+        const el = document.getElementById('profile-identity-tag');
+        if (el) el.textContent = s.aboutTag;
+      }
+      if (s.aboutTitle) {
+        const el = document.getElementById('profile-identity-title');
+        if (el) el.textContent = s.aboutTitle;
+      }
+      if (s.aboutDesc) {
+        const el = document.getElementById('profile-identity-desc');
+        if (el) el.textContent = s.aboutDesc;
+      }
       if (s.visi) {
         const el = document.getElementById('profile-visi-text');
-        if (el) el.textContent = `"${s.visi}"`;
+        if (el) el.textContent = s.visi;
       }
       if (Array.isArray(s.misi) && s.misi.length > 0) {
         const ul = document.getElementById('profile-misi-list');
@@ -657,6 +706,18 @@ const org = siteSettings.orgStructure;
       editProfileBtn.addEventListener('click', () => {
         try {
           const s = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          if (s.aboutTag) {
+            const el = document.getElementById('about-tag-input') as HTMLInputElement | null;
+            if (el) el.value = s.aboutTag;
+          }
+          if (s.aboutTitle) {
+            const el = document.getElementById('about-title-input') as HTMLInputElement | null;
+            if (el) el.value = s.aboutTitle;
+          }
+          if (s.aboutDesc) {
+            const el = document.getElementById('about-desc-input') as HTMLInputElement | null;
+            if (el) el.value = s.aboutDesc;
+          }
           if (s.visi) {
             const el = document.getElementById('visi-input') as HTMLTextAreaElement | null;
             if (el) el.value = s.visi;
@@ -709,11 +770,17 @@ const org = siteSettings.orgStructure;
     if (profileForm && profileModal) {
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const aboutTagVal = (document.getElementById('about-tag-input') as HTMLInputElement).value.trim();
+        const aboutTitleVal = (document.getElementById('about-title-input') as HTMLInputElement).value.trim();
+        const aboutDescVal = (document.getElementById('about-desc-input') as HTMLInputElement).value.trim();
         const visiVal = (document.getElementById('visi-input') as HTMLTextAreaElement).value.trim();
         const misiRaw = (document.getElementById('misi-input') as HTMLTextAreaElement).value;
         const misiArray = misiRaw.split('\n').map(m => m.trim()).filter(m => m);
 
         await saveSettings({
+          aboutTag: aboutTagVal,
+          aboutTitle: aboutTitleVal,
+          aboutDesc: aboutDescVal,
           visi: visiVal,
           misi: misiArray
         });
