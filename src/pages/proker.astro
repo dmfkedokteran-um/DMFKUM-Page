@@ -10,7 +10,7 @@ const newsList = defaultNewsData || MOCK_NEWS;
 const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgStructure?.komisi || [];
 ---
 
-<Layout title="Dokumentasi Program - DMFK UM" description="Program kerja, rekam jejak, dan publikasi kegiatan terkini dari berbagai divisi DMFK UM.">
+<Layout title="Karya & Rekam Jejak - DMFK UM" description="Program kerja, rekam jejak, dan publikasi kegiatan terkini dari berbagai komisi DMFK UM.">
   <div class="py-16 px-4 max-w-7xl mx-auto animate-fade-in pb-24">
     <div class="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
       <div>
@@ -21,7 +21,7 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
         id="add-news-btn"
         class="admin-only hidden flex items-center gap-2 bg-rose-600 text-white px-6 py-3 rounded-full font-bold hover:bg-rose-700 transition-colors shadow-lg shadow-rose-600/20 shrink-0 cursor-pointer outline-none"
       >
-        <Plus class="h-5 w-5" /> Tambah Berita
+        <Plus class="h-5 w-5" /> Tambah Karya
       </button>
     </div>
 
@@ -124,7 +124,7 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       <div class="bg-white w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-8">
           <div>
-            <h2 id="form-modal-title" class="text-2xl font-extrabold text-gray-900">Tambah Berita</h2>
+            <h2 id="form-modal-title" class="text-2xl font-extrabold text-gray-900">Tambah Karya</h2>
             <p class="text-sm font-medium text-gray-500 mt-1">Lengkapi data berita di bawah ini.</p>
           </div>
           <button id="close-news-form-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
@@ -452,7 +452,7 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       const contentInput = document.getElementById('news-form-content') as HTMLTextAreaElement | null;
 
       if (news) {
-        if (titleHeader) titleHeader.textContent = "Edit Berita";
+        if (titleHeader) titleHeader.textContent = "Edit Karya";
         if (idInput) idInput.value = news.id.toString();
         if (titleInput) titleInput.value = news.title;
         if (categoryInput) categoryInput.value = news.category;
@@ -462,7 +462,7 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
         if (excerptInput) excerptInput.value = news.excerpt;
         if (contentInput) contentInput.value = news.content || '';
       } else {
-        if (titleHeader) titleHeader.textContent = "Tambah Berita";
+        if (titleHeader) titleHeader.textContent = "Tambah Karya";
         newsForm.reset();
         if (idInput) idInput.value = '';
         
