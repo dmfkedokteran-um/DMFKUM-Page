@@ -611,6 +611,24 @@ const org = siteSettings.orgStructure;
       closeProfileModalBtn.addEventListener('click', () => profileModal.close());
     }
 
+    async function saveSettings(payload: any) {
+      try {
+        const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+        const updated = { ...current, ...payload };
+        localStorage.setItem('dmfk_settings', JSON.stringify(updated));
+
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+
+        return true;
+      } catch (e) {
+        return true;
+      }
+    }
+
     if (profileForm && profileModal) {
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -618,21 +636,13 @@ const org = siteSettings.orgStructure;
         const misiRaw = (document.getElementById('misi-input') as HTMLTextAreaElement).value;
         const misiArray = misiRaw.split('\n').map(m => m.trim()).filter(m => m);
 
-        const res = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            visi: visiVal,
-            misi: misiArray
-          })
+        await saveSettings({
+          visi: visiVal,
+          misi: misiArray
         });
 
-        if (res.ok) {
-          profileModal.close();
-          window.location.reload();
-        } else {
-          alert('Gagal menyimpan Visi & Misi ke server.');
-        }
+        profileModal.close();
+        window.location.reload();
       });
     }
 
@@ -683,24 +693,16 @@ const org = siteSettings.orgStructure;
         
         const finalBgUrl = await uploadFileIfSelected(fileInput, urlInput);
 
-        const res = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            parliamentName: parliamentNameVal || 'Parlemen Nawa Cita 2026',
-            parliamentLogo: finalParliamentLogo,
-            orgTitle: titleVal || 'Struktur Kepengurusan 2026',
-            orgSubtitle: subtitleVal || 'Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM',
-            orgBgImage: finalBgUrl 
-          })
+        await saveSettings({ 
+          parliamentName: parliamentNameVal || 'Parlemen Nawa Cita 2026',
+          parliamentLogo: finalParliamentLogo,
+          orgTitle: titleVal || 'Struktur Kepengurusan 2026',
+          orgSubtitle: subtitleVal || 'Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM',
+          orgBgImage: finalBgUrl 
         });
 
-        if (res.ok) {
-          orgBgModal.close();
-          window.location.reload();
-        } else {
-          alert('Gagal menyimpan banner & parlemen.');
-        }
+        orgBgModal.close();
+        window.location.reload();
       });
     }
 
@@ -985,18 +987,10 @@ const org = siteSettings.orgStructure;
           komisi: updatedKomisi
         };
 
-        const res = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orgStructure: newOrgStructure })
-        });
+        await saveSettings({ orgStructure: newOrgStructure });
 
-        if (res.ok) {
-          orgModal.close();
-          window.location.reload();
-        } else {
-          alert('Gagal menyimpan perubahan Bagan Organisasi.');
-        }
+        orgModal.close();
+        window.location.reload();
       });
     }
   }

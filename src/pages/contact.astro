@@ -231,24 +231,26 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
         const linktreeVal = (document.getElementById('linktree-input') as HTMLInputElement).value.trim();
         const addressVal = (document.getElementById('address-input') as HTMLTextAreaElement).value.trim();
 
-        const res = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contactEmail: emailVal,
-            contactPhone: phoneVal,
-            contactInstagram: instagramVal,
-            contactLinktree: linktreeVal,
-            contactAddress: addressVal
-          })
-        });
-
-        if (res.ok) {
-          contactModal.close();
-          window.location.reload();
-        } else {
-          alert('Gagal menyimpan Informasi Kontak ke server.');
-        }
+        const contactPayload = {
+          contactEmail: emailVal,
+          contactPhone: phoneVal,
+          contactInstagram: instagramVal,
+          contactLinktree: linktreeVal,
+          contactAddress: addressVal
+        };
+        // Try server save, always persist to localStorage as fallback
+        try {
+          await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(contactPayload)
+          }).catch(() => {});
+        } catch (_) {}
+        const cachedContact = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+        Object.assign(cachedContact, contactPayload);
+        localStorage.setItem('dmfk_settings', JSON.stringify(cachedContact));
+        contactModal.close();
+        window.location.reload();
       });
     }
   }

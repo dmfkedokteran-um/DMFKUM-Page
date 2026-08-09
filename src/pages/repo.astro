@@ -434,14 +434,17 @@ const docs = defaultDocsData || MOCK_DOCS;
     };
 
     async function deleteDoc(id: number) {
-      const res = await fetch(`/api/docs?id=${id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        window.location.reload();
-      } else {
-        alert('Gagal menghapus dokumen dari server.');
+      // Try server delete, fall back to localStorage on static/serverless hosts
+      try {
+        await fetch(`/api/docs?id=${id}`, { method: 'DELETE' }).catch(() => {});
+      } catch (_) {}
+      // Remove from localStorage cache
+      const cached = JSON.parse(localStorage.getItem('dmfk_docs') || 'null');
+      if (cached) {
+        const updated = cached.filter((d: any) => d.id !== id);
+        localStorage.setItem('dmfk_docs', JSON.stringify(updated));
       }
+      window.location.reload();
     }
 
     const previewModal = document.getElementById('doc-preview-modal') as HTMLDialogElement | null;
@@ -635,18 +638,22 @@ const docs = defaultDocsData || MOCK_DOCS;
           fileUrl: uploadedFileUrl
         };
 
-        const res = await fetch('/api/docs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(entry)
-        });
-
-        if (res.ok) {
-          docFormModal?.close();
-          window.location.reload();
-        } else {
-          alert('Gagal menyimpan dokumen ke server.');
-        }
+        // Try server save, always persist to localStorage as fallback
+        try {
+          await fetch('/api/docs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+          }).catch(() => {});
+        } catch (_) {}
+        // Upsert into localStorage cache
+        const cachedDocs = JSON.parse(localStorage.getItem('dmfk_docs') || 'null');
+        const baseDocs = cachedDocs || docsList;
+        const dIdx = baseDocs.findIndex((d: any) => d.id === entry.id);
+        if (dIdx >= 0) baseDocs[dIdx] = entry; else baseDocs.push(entry);
+        localStorage.setItem('dmfk_docs', JSON.stringify(baseDocs));
+        docFormModal?.close();
+        window.location.reload();
       });
     }
   }

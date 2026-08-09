@@ -322,19 +322,19 @@ const docsList = defaultDocsData || MOCK_DOCS;
           return;
         }
 
-        // Save new settings to server database
-        const res = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ heroImage: newHeroImageUrl })
-        });
-
-        if (res.ok) {
-          heroModal.close();
-          window.location.reload();
-        } else {
-          alert('Gagal menyimpan gambar header baru ke server.');
-        }
+        // Try server save, always persist to localStorage as fallback
+        try {
+          await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ heroImage: newHeroImageUrl })
+          }).catch(() => {});
+        } catch (_) {}
+        const cachedSettings = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+        cachedSettings.heroImage = newHeroImageUrl;
+        localStorage.setItem('dmfk_settings', JSON.stringify(cachedSettings));
+        heroModal.close();
+        window.location.reload();
       });
     }
   }

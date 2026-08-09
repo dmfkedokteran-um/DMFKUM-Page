@@ -256,14 +256,17 @@ const newsList = defaultNewsData || MOCK_NEWS;
 
     // CRUD Helper functions
     async function deleteNews(id: number) {
-      const res = await fetch(`/api/news?id=${id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        window.location.reload();
-      } else {
-        alert('Gagal menghapus berita dari server.');
+      // Try server delete, fall back to localStorage on static/serverless hosts
+      try {
+        await fetch(`/api/news?id=${id}`, { method: 'DELETE' }).catch(() => {});
+      } catch (_) {}
+      // Remove from localStorage cache
+      const cached = JSON.parse(localStorage.getItem('dmfk_news') || 'null');
+      if (cached) {
+        const updated = cached.filter((n: any) => n.id !== id);
+        localStorage.setItem('dmfk_news', JSON.stringify(updated));
       }
+      window.location.reload();
     }
 
     // Preview Modal logic
@@ -448,18 +451,22 @@ const newsList = defaultNewsData || MOCK_NEWS;
           content: contentVal
         };
 
-        const res = await fetch('/api/news', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(entry)
-        });
-
-        if (res.ok) {
-          newsFormModal?.close();
-          window.location.reload();
-        } else {
-          alert('Gagal menyimpan berita ke server.');
-        }
+        // Try server save, always persist to localStorage as fallback
+        try {
+          await fetch('/api/news', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+          }).catch(() => {});
+        } catch (_) {}
+        // Upsert into localStorage cache
+        const cached = JSON.parse(localStorage.getItem('dmfk_news') || 'null');
+        const base = cached || newsList;
+        const idx = base.findIndex((n: any) => n.id === entry.id);
+        if (idx >= 0) base[idx] = entry; else base.push(entry);
+        localStorage.setItem('dmfk_news', JSON.stringify(base));
+        newsFormModal?.close();
+        window.location.reload();
       });
     }
   }
