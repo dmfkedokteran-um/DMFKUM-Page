@@ -1,3 +1,5 @@
+export const prerender = false;
+
 import { getDbCredentials } from '../../lib/db.js';
 
 export async function GET() {

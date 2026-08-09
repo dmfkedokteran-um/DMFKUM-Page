@@ -1,0 +1,173 @@
+{
+  "heroImage": "/uploads/1786252817938_Gemini_Generated_Image_b5vxtob5vxtob5vx.png",
+  "orgBgImage": "/uploads/1786255684698_media_408251_1780905706821.jpg",
+  "parliamentName": "Parlemen Nawa Cita 2026",
+  "parliamentLogo": "",
+  "orgTitle": "Struktur Kepengurusan 2026",
+  "orgSubtitle": "Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM",
+  "heroTitle": "Membangun Sinergi,\nMenginspirasi Negeri.",
+  "heroSubtitle": "Jelajahi portal kami. Temukan pembaruan terkini, rekam jejak program kerja, dan akses dokumen publik secara instan.",
+  "visi": "Menjadi organisasi pelopor yang inovatif, transparan, dan berdampak nyata bagi pembangunan kapasitas masyarakat dan kemajuan keilmuan nasional pada tahun 2030.",
+  "misi": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+  ],
+  "contactEmail": "haka@gmail.com",
+  "contactPhone": "081247562080",
+  "contactInstagram": "mengerikan",
+  "contactLinktree": "https://fk.um.ac.id",
+  "contactAddress": "Gedung FK Lt. 2, Universitas Negeri Malang, Jl. Semarang 5, Malang",
+  "orgStructure": {
+    "pembina": {
+      "title": "Pembina Organisasi",
+      "name": "Dr. Ahmad Subandi, M.Pd.",
+      "nip": "NIP. 19820412 201012 1 004",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+    },
+    "presidium": [
+      {
+        "role": "Ketua Umum",
+        "name": "Muhammad Farhan",
+        "dept": "Kedokteran '23",
+        "avatar": "/uploads/1786255178709_media_408247_1780905693128.jpg"
+      },
+      {
+        "role": "Wakil Ketua",
+        "name": "Nabila Putri",
+        "dept": "Kedokteran '23",
+        "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
+      }
+    ],
+    "sekben": [
+      {
+        "role": "Sekretaris Umum",
+        "name": "Zahra Annisa",
+        "dept": "Kebidanan '24",
+        "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80"
+      },
+      {
+        "role": "Bendahara Umum",
+        "name": "Dewa Saputra",
+        "dept": "Kedokteran '23",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+      }
+    ],
+    "komisi": [
+      {
+        "id": "komisi-1",
+        "code": "Komisi I",
+        "title": "Advokasi & Aspirasi",
+        "themeColor": "rose",
+        "ketua": {
+          "name": "Rizky Ramadhan",
+          "dept": "S1 Kedokteran '23",
+          "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
+        },
+        "anggota": [
+          {
+            "name": "Siti Rahma",
+            "dept": "S1 Kebidanan '24",
+            "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "Kevin Pratama",
+            "dept": "S1 Farmasi '24",
+            "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80"
+          }
+        ]
+      },
+      {
+        "id": "komisi-2",
+        "code": "Komisi II",
+        "title": "Legislasi & Regulasi",
+        "themeColor": "blue",
+        "ketua": {
+          "name": "Amanda Clarissa",
+          "dept": "S1 Kedokteran '23",
+          "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+        },
+        "anggota": [
+          {
+            "name": "Diva Maharani",
+            "dept": "S1 Kedokteran '24",
+            "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "Fajar Nugraha",
+            "dept": "S1 Farmasi '23",
+            "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "Nabila Zalianty",
+            "dept": "S1 Kebidanan '24",
+            "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80"
+          }
+        ]
+      },
+      {
+        "id": "komisi-3",
+        "code": "Komisi III",
+        "title": "Pengawasan & Keuangan",
+        "themeColor": "emerald",
+        "ketua": {
+          "name": "Bima Kusuma",
+          "dept": "S1 Kedokteran '23",
+          "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+        },
+        "anggota": [
+          {
+            "name": "Rina Wijaya",
+            "dept": "S1 Farmasi '24",
+            "avatar": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "Taufik Hidayat",
+            "dept": "S1 Kedokteran '24",
+            "avatar": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "Gita Gutawa",
+            "dept": "S1 Kebidanan '23",
+            "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80"
+          }
+        ]
+      },
+      {
+        "id": "komisi-4",
+        "code": "Komisi IV",
+        "title": "Humas & Informasi",
+        "themeColor": "fuchsia",
+        "ketua": {
+          "name": "Citra Lestari",
+          "dept": "S1 Kebidanan '23",
+          "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
+        },
+        "anggota": [
+          {
+            "name": "Eko Prasetyo",
+            "dept": "S1 Kedokteran '24",
+            "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "Maya Indah",
+            "dept": "S1 Farmasi '24",
+            "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "Surya Pratama",
+            "dept": "S1 Kedokteran '24",
+            "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
+          },
+          {
+            "name": "bb",
+            "dept": "haj",
+            "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80"
+          }
+        ]
+      }
+    ]
+  }
+}

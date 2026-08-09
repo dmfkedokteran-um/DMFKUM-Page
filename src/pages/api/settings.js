@@ -1,3 +1,5 @@
+export const prerender = false;
+
 import { readCloudDB, writeCloudDB } from '../../lib/db.js';
 import defaultSettingsData from '../../../database/settings.json';
 
