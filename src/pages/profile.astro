@@ -7,36 +7,36 @@ import { Eye, Users, Edit, X, ShieldCheck, Award, UserCheck, Plus, Image } from 
 const DEFAULT_ORG_STRUCTURE = {
   pembina: {
     title: "Pembina Organisasi",
-    name: "Dr. Ahmad Subandi, M.Pd.",
-    nip: "NIP. 19820412 201012 1 004",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+    name: "",
+    nip: "",
+    avatar: ""
   },
   presidium: [
     {
       role: "Ketua Umum",
-      name: "Muhammad Farhan",
-      dept: "Kedokteran '23",
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80"
+      name: "",
+      dept: "",
+      avatar: ""
     },
     {
       role: "Wakil Ketua",
-      name: "Nabila Putri",
-      dept: "Kedokteran '23",
-      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
+      name: "",
+      dept: "",
+      avatar: ""
     }
   ],
   sekben: [
     {
       role: "Sekretaris Umum",
-      name: "Zahra Annisa",
-      dept: "Kebidanan '24",
-      avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80"
+      name: "",
+      dept: "",
+      avatar: ""
     },
     {
       role: "Bendahara Umum",
-      name: "Dewa Saputra",
-      dept: "Kedokteran '23",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+      name: "",
+      dept: "",
+      avatar: ""
     }
   ],
   komisi: [
@@ -45,64 +45,32 @@ const DEFAULT_ORG_STRUCTURE = {
       code: "Komisi I",
       title: "Advokasi & Aspirasi",
       themeColor: "rose",
-      ketua: {
-        name: "Rizky Ramadhan",
-        dept: "S1 Kedokteran '23",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
-      },
-      anggota: [
-        { name: "Ahmad Fauzi", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" },
-        { name: "Siti Rahma", dept: "S1 Kebidanan '24", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80" },
-        { name: "Kevin Pratama", dept: "S1 Farmasi '24", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80" }
-      ]
+      ketua: { name: "", dept: "", avatar: "" },
+      anggota: []
     },
     {
       id: "komisi-2",
       code: "Komisi II",
       title: "Legislasi & Regulasi",
       themeColor: "blue",
-      ketua: {
-        name: "Amanda Clarissa",
-        dept: "S1 Kedokteran '23",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
-      },
-      anggota: [
-        { name: "Diva Maharani", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80" },
-        { name: "Fajar Nugraha", dept: "S1 Farmasi '23", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80" },
-        { name: "Nabila Zalianty", dept: "S1 Kebidanan '24", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80" }
-      ]
+      ketua: { name: "", dept: "", avatar: "" },
+      anggota: []
     },
     {
       id: "komisi-3",
       code: "Komisi III",
       title: "Pengawasan & Keuangan",
       themeColor: "emerald",
-      ketua: {
-        name: "Bima Kusuma",
-        dept: "S1 Kedokteran '23",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-      },
-      anggota: [
-        { name: "Rina Wijaya", dept: "S1 Farmasi '24", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=150&q=80" },
-        { name: "Taufik Hidayat", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80" },
-        { name: "Gita Gutawa", dept: "S1 Kebidanan '23", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" }
-      ]
+      ketua: { name: "", dept: "", avatar: "" },
+      anggota: []
     },
     {
       id: "komisi-4",
       code: "Komisi IV",
       title: "Humas & Informasi",
       themeColor: "fuchsia",
-      ketua: {
-        name: "Citra Lestari",
-        dept: "S1 Kebidanan '23",
-        avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
-      },
-      anggota: [
-        { name: "Eko Prasetyo", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80" },
-        { name: "Maya Indah", dept: "S1 Farmasi '24", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80" },
-        { name: "Surya Pratama", dept: "S1 Kedokteran '24", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" }
-      ]
+      ketua: { name: "", dept: "", avatar: "" },
+      anggota: []
     }
   ]
 };
@@ -111,18 +79,19 @@ import defaultSettingsData from "../../database/settings.json";
 
 const DEFAULT_PROFILE_SETTINGS = {
   orgBgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
-  parliamentName: "Parlemen Nawa Cita 2026",
+  parliamentName: "Parlemen Meliora 2026",
   parliamentLogo: "",
   orgTitle: "Struktur Kepengurusan 2026",
   orgSubtitle: "Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM",
   aboutTag: "Tentang Kami",
   aboutTitle: "Identitas & Tujuan",
   aboutDesc: "Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.",
-  visi: "Menjadi organisasi pelopor yang inovatif, transparan, dan berdampak nyata bagi pembangunan kapasitas masyarakat dan kemajuan keilmuan nasional pada tahun 2030.",
+  visi: "Menjadikan Dewan Mahasiswa Fakultas Kedokteran Universitas Negeri Malang sebagai lembaga legislatif yang solutif, proaktif, transparan, dan berintegritas dalam menampung aspirasi serta mengawal pergerakan mahasiswa.",
   misi: [
-    "Mengembangkan program kerja berbasis riset & pengabdian.",
-    "Mewujudkan ekosistem administrasi transparan.",
-    "Menjalin kemitraan kolaboratif lintas sektor."
+    "Menyelenggarakan tata kelola kelembagaan yang transparan, akuntabel, dan berorientasi pada pelayanan mahasiswa.",
+    "Mengoptimalkan fungsi pengawasan dan legislasi dalam setiap program kerja keorganisasian.",
+    "Membangun saluran advokasi aspirasi yang responsif, inklusif, dan solutif bagi seluruh mahasiswa FK UM.",
+    "Mempererat kolaborasi sinergis antar lembaga kemahasiswaan di lingkungan Fakultas Kedokteran UM."
   ],
   orgStructure: DEFAULT_ORG_STRUCTURE
 };
