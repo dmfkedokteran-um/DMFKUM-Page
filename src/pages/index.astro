@@ -275,21 +275,96 @@ const docsList = defaultDocsData || MOCK_DOCS;
       } catch (e) {}
     }
 
-    // 🌐 Fetch latest settings from server to sync hero image across devices
-    fetch('/api/settings')
+    // Helper to render home news
+    function renderHomeNews(items: any[]) {
+      const container = document.getElementById('home-news-container');
+      if (!container) return;
+      const top3 = items.slice(0, 3);
+      container.innerHTML = top3.map(news => `
+        <div class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/50 flex flex-col">
+          <div class="relative overflow-hidden">
+            <img src="${news.image}" alt="${news.title}" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 shadow-sm">
+              ${news.category}
+            </div>
+          </div>
+          <div class="p-8 flex flex-col flex-1">
+            <div class="text-sm font-semibold text-gray-400 mb-3">${news.date}</div>
+            <h3 class="font-extrabold text-xl text-gray-800 mb-3 leading-snug group-hover:text-rose-700 transition-colors">${news.title}</h3>
+            <p class="text-gray-500 text-sm mb-6 leading-relaxed line-clamp-2">${news.excerpt || ''}</p>
+            <a href="/proker" class="mt-auto text-rose-600 font-bold text-sm inline-flex items-center gap-2 group-hover:gap-3 transition-all">
+              Selengkapnya <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Helper to render home docs
+    function renderHomeDocs(items: any[]) {
+      const container = document.getElementById('home-docs-container');
+      if (!container) return;
+      const top3 = items.slice(0, 3);
+      container.innerHTML = top3.map(doc => `
+        <div class="bg-white p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-4">
+            <div class="p-3.5 rounded-xl shrink-0 ${doc.ext === 'PDF' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-900 text-base">${doc.title}</h4>
+              <div class="flex items-center gap-3 text-xs text-gray-400 font-medium mt-1">
+                <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">${doc.category}</span>
+                <span>${doc.date}</span>
+                <span>•</span>
+                <span>${doc.size}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <a href="/repo" class="flex-1 sm:flex-initial text-center px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-xl text-xs font-bold transition-colors">Buka</a>
+            ${doc.fileUrl ? `
+              <a href="${doc.fileUrl}" download="${doc.title}.${doc.ext ? doc.ext.toLowerCase() : 'pdf'}" class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y3="3"/></svg> Unduh
+              </a>
+            ` : `
+              <a href="/repo" class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y3="3"/></svg> Unduh
+              </a>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 1. Sync from localStorage immediately
+    const cachedNews = localStorage.getItem('dmfk_news');
+    if (cachedNews) {
+      try { renderHomeNews(JSON.parse(cachedNews)); } catch (e) {}
+    }
+    const cachedDocs = localStorage.getItem('dmfk_docs');
+    if (cachedDocs) {
+      try { renderHomeDocs(JSON.parse(cachedDocs)); } catch (e) {}
+    }
+
+    // 2. Sync from cloud server APIs
+    fetch('/api/news')
       .then(res => res.ok ? res.json() : null)
-      .then(resData => {
-        if (resData && resData.isCloud && resData.settings && typeof resData.settings === 'object') {
-          const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
-          const merged = { ...current, ...resData.settings };
-          localStorage.setItem('dmfk_settings', JSON.stringify(merged));
-          if (merged.heroImage) {
-            const heroBg = document.getElementById('hero-bg-overlay');
-            if (heroBg) heroBg.style.backgroundImage = `url('${merged.heroImage}')`;
-          }
+      .then(data => {
+        if (data && Array.isArray(data.news) && data.news.length > 0) {
+          localStorage.setItem('dmfk_news', JSON.stringify(data.news));
+          renderHomeNews(data.news);
         }
-      })
-      .catch(() => {});
+      }).catch(() => {});
+
+    fetch('/api/docs')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && Array.isArray(data.docs) && data.docs.length > 0) {
+          localStorage.setItem('dmfk_docs', JSON.stringify(data.docs));
+          renderHomeDocs(data.docs);
+        }
+      }).catch(() => {});
 
     // Toggle Admin Edit Buttons Visibility
     const adminControls = document.querySelectorAll('.admin-only');
