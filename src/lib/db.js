@@ -27,7 +27,7 @@ function getDbCredentials() {
         }
       }
       if (!token && (upper.includes('STORAGE') || upper.includes('KV') || upper.includes('REDIS') || upper.includes('UPSTASH')) && (upper.includes('TOKEN') || upper.includes('KEY') || upper.includes('SECRET'))) {
-        if (value.length > 15) {
+        if (!upper.includes('READ_ONLY') && value.length > 15) {
           token = value;
         }
       }
@@ -38,7 +38,7 @@ function getDbCredentials() {
 }
 
 /**
- * Reads data from Cloud Database (Upstash Redis REST / Vercel KV) if environment variables are set.
+ * Reads data from Cloud Database (Upstash Redis REST / Vercel KV).
  * Returns { data, isCloud: boolean }.
  */
 export async function readCloudDB(key, fallbackData) {
@@ -46,7 +46,6 @@ export async function readCloudDB(key, fallbackData) {
 
   if (url && token) {
     try {
-      // POST with ["GET", "dmfk_key"] works reliably across Upstash & Vercel KV REST APIs
       const res = await fetch(url, {
         method: 'POST',
         headers: {
@@ -62,6 +61,8 @@ export async function readCloudDB(key, fallbackData) {
           const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
           return { data: parsed, isCloud: true };
         }
+        // Connection is active (HTTP 200), but key doesn't exist in Redis yet
+        return { data: fallbackData, isCloud: true };
       }
     } catch (err) {
       console.error(`[CloudDB] GET dmfk_${key} error:`, err);
@@ -79,15 +80,14 @@ export async function readCloudDB(key, fallbackData) {
 }
 
 /**
- * Writes data to Cloud Database (Upstash Redis REST / Vercel KV) if environment variables are set.
+ * Writes data to Cloud Database (Upstash Redis REST / Vercel KV).
  */
 export async function writeCloudDB(key, data) {
   const { url, token } = getDbCredentials();
 
   if (url && token) {
     try {
-      // POST with ["SET", "dmfk_key", stringified_value] works reliably across Upstash & Vercel KV REST APIs
-      await fetch(url, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -95,6 +95,8 @@ export async function writeCloudDB(key, data) {
         },
         body: JSON.stringify(["SET", `dmfk_${key}`, JSON.stringify(data)])
       });
+      const resJson = await res.json();
+      console.log(`[CloudDB] SET dmfk_${key} status: ${res.status}`, resJson);
     } catch (err) {
       console.error(`[CloudDB] SET dmfk_${key} error:`, err);
     }
