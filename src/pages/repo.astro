@@ -508,6 +508,17 @@ const docs = defaultDocsData || MOCK_DOCS;
       window.location.reload();
     }
 
+    function getDriveFileId(url: string): string | null {
+      if (!url) return null;
+      const fileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileMatch) return fileMatch[1];
+      const idMatch = url.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+      if (idMatch) return idMatch[1];
+      const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+      if (lh3Match) return lh3Match[1];
+      return null;
+    }
+
     const previewModal = document.getElementById('doc-preview-modal') as HTMLDialogElement | null;
     const closePreviewBtn = document.getElementById('close-doc-preview-btn');
 
@@ -530,25 +541,42 @@ const docs = defaultDocsData || MOCK_DOCS;
       if (contentEl) {
         contentEl.innerHTML = '';
 
-        if (doc.fileUrl) {
-          // Render physical file from server
-          if (doc.ext === 'PDF') {
-            contentEl.innerHTML = `<iframe src="${doc.fileUrl}" class="w-full h-full min-h-[550px] border-none bg-white"></iframe>`;
-          } else if (['PNG', 'JPG', 'JPEG'].includes(doc.ext.toUpperCase())) {
+        const driveId = doc.fileUrl ? getDriveFileId(doc.fileUrl) : null;
+
+        if (driveId) {
+          // Google Drive preview URL allows iframe embedding for PDF, DOCX, XLSX, images, etc.
+          contentEl.innerHTML = `<iframe src="https://drive.google.com/file/d/${driveId}/preview" class="w-full h-full min-h-[550px] border-none bg-white rounded-xl" allow="autoplay"></iframe>`;
+        } else if (doc.fileUrl) {
+          if (doc.fileUrl.startsWith('data:application/pdf') || doc.ext === 'PDF' || doc.fileUrl.toLowerCase().endsWith('.pdf')) {
+            contentEl.innerHTML = `<iframe src="${doc.fileUrl}" class="w-full h-full min-h-[550px] border-none bg-white rounded-xl"></iframe>`;
+          } else if (doc.fileUrl.startsWith('data:image') || ['PNG', 'JPG', 'JPEG', 'WEBP'].includes(doc.ext.toUpperCase()) || /\.(png|jpg|jpeg|webp)$/i.test(doc.fileUrl)) {
             contentEl.innerHTML = `<div class="w-full h-full flex justify-center items-center p-6 bg-gray-900/5"><img src="${doc.fileUrl}" class="max-w-full max-h-full rounded-2xl shadow-md object-contain" /></div>`;
-          } else {
-            contentEl.innerHTML = `<div class="p-12 text-center my-auto"><p class="text-gray-500 font-bold mb-4">Berkas ${doc.ext} tidak dapat dipratinjau secara langsung di browser.</p><a href="${doc.fileUrl}" download="${doc.title}.${doc.ext.toLowerCase()}" class="inline-flex items-center gap-2 bg-rose-600 text-white px-6 py-3 rounded-full font-bold shadow-md">Unduh File Asli Dari Server</a></div>`;
+          } else if (doc.fileUrl.startsWith('http://') || doc.fileUrl.startsWith('https://')) {
+            contentEl.innerHTML = `<iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(doc.fileUrl)}&embedded=true" class="w-full h-full min-h-[550px] border-none bg-white rounded-xl"></iframe>`;
+          } else if (doc.content) {
+            const paragraphs = doc.content.split('\n').filter(p => p.trim()).map(p => `<p class="mb-4 text-gray-700 leading-relaxed font-medium">${p}</p>`).join('');
+            contentEl.innerHTML = `
+              <div class="p-6 sm:p-12 max-w-3xl mx-auto my-6 bg-white rounded-2xl shadow-sm border border-gray-100/80">
+                <div class="border-b border-gray-100 pb-6 mb-6">
+                  <h2 class="text-2xl font-extrabold text-gray-900 leading-tight">${doc.title}</h2>
+                  <p class="text-xs text-gray-400 font-medium mt-2">Diterbitkan: ${doc.date}</p>
+                </div>
+                <div class="text-gray-700 text-base leading-relaxed">
+                  ${paragraphs}
+                </div>
+              </div>
+            `;
           }
         } else {
           const fileBlob = await getFileFromDB(doc.id);
           if (fileBlob) {
             currentObjectURL = URL.createObjectURL(fileBlob);
             if (doc.ext === 'PDF') {
-              contentEl.innerHTML = `<iframe src="${currentObjectURL}" class="w-full h-full min-h-[550px] border-none bg-white"></iframe>`;
-            } else if (['PNG', 'JPG', 'JPEG'].includes(doc.ext.toUpperCase())) {
+              contentEl.innerHTML = `<iframe src="${currentObjectURL}" class="w-full h-full min-h-[550px] border-none bg-white rounded-xl"></iframe>`;
+            } else if (['PNG', 'JPG', 'JPEG', 'WEBP'].includes(doc.ext.toUpperCase())) {
               contentEl.innerHTML = `<div class="w-full h-full flex justify-center items-center p-6 bg-gray-900/5"><img src="${currentObjectURL}" class="max-w-full max-h-full rounded-2xl shadow-md object-contain" /></div>`;
             } else {
-              contentEl.innerHTML = `<div class="p-12 text-center my-auto"><p class="text-gray-500 font-bold mb-4">Berkas ${doc.ext} tidak dapat dipratinjau.</p><a href="${currentObjectURL}" download="${doc.title}.${doc.ext.toLowerCase()}" class="inline-flex items-center gap-2 bg-rose-600 text-white px-6 py-3 rounded-full font-bold shadow-md">Unduh File Asli</a></div>`;
+              contentEl.innerHTML = `<iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(currentObjectURL)}&embedded=true" class="w-full h-full min-h-[550px] border-none bg-white rounded-xl"></iframe>`;
             }
           } else if (doc.content) {
             const paragraphs = doc.content.split('\n').filter(p => p.trim()).map(p => `<p class="mb-4 text-gray-700 leading-relaxed font-medium">${p}</p>`).join('');
