@@ -216,27 +216,15 @@ const docs = defaultDocsData || MOCK_DOCS;
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-2">Ukuran File</label>
-              <input 
-                required 
-                type="text" 
-                id="doc-form-size"
-                placeholder="Contoh: 2.4 MB" 
-                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-2">Tanggal Terbit</label>
-              <input 
-                required 
-                type="text" 
-                id="doc-form-date"
-                placeholder="Contoh: 15 Jan 2026" 
-                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
-              />
-            </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Tanggal Terbit</label>
+            <input 
+              required 
+              type="text" 
+              id="doc-form-date"
+              placeholder="Contoh: 15 Jan 2026" 
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
+            />
           </div>
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-2">Upload Berkas Fisik (PDF, Gambar, dll)</label>
@@ -246,7 +234,6 @@ const docs = defaultDocsData || MOCK_DOCS;
               accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx" 
               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
             />
-            <p class="text-xs text-gray-400 mt-1">Upload file fisik langsung (akan disimulasikan/disimpan ke browser).</p>
           </div>
 
           <div>
@@ -257,7 +244,6 @@ const docs = defaultDocsData || MOCK_DOCS;
               placeholder="Paste link Google Drive (contoh: https://drive.google.com/file/d/...)" 
               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
             />
-            <p class="text-xs text-gray-400 mt-1">Link Google Drive akan otomatis dikonversi ke format yang sesuai.</p>
           </div>
 
           <div>
@@ -672,9 +658,6 @@ const docs = defaultDocsData || MOCK_DOCS;
               opt.value = rawExt; opt.textContent = rawExt; extSelect.appendChild(opt);
             }
             extSelect.value = rawExt;
-          }
-          const sizeInput = document.getElementById('doc-form-size') as HTMLInputElement | null;
-          if (sizeInput) sizeInput.value = formatBytes(file.size);
           const titleInput = document.getElementById('doc-form-title') as HTMLInputElement | null;
           if (titleInput && !titleInput.value) titleInput.value = nameParts.slice(0, -1).join('.');
         }
@@ -720,7 +703,6 @@ const docs = defaultDocsData || MOCK_DOCS;
         (document.getElementById('doc-form-title') as HTMLInputElement).value = doc.title;
         (document.getElementById('doc-form-category') as HTMLSelectElement).value = doc.category;
         (document.getElementById('doc-form-ext') as HTMLSelectElement).value = doc.ext;
-        (document.getElementById('doc-form-size') as HTMLInputElement).value = doc.size;
         (document.getElementById('doc-form-date') as HTMLInputElement).value = doc.date;
         (document.getElementById('doc-form-content') as HTMLTextAreaElement).value = doc.content || '';
         if (docUrlInput) docUrlInput.value = doc.fileUrl || '';
@@ -757,7 +739,9 @@ const docs = defaultDocsData || MOCK_DOCS;
 
         // Convert file to base64 DataURL (works on static Vercel hosting) if file attached
         const file = fileInput?.files?.[0];
+        let calcSize = existingDoc ? existingDoc.size : '1.2 MB';
         if (file) {
+          calcSize = formatBytes(file.size);
           uploadedFileUrl = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -771,7 +755,7 @@ const docs = defaultDocsData || MOCK_DOCS;
           title: (document.getElementById('doc-form-title') as HTMLInputElement).value,
           category: (document.getElementById('doc-form-category') as HTMLSelectElement).value,
           ext: (document.getElementById('doc-form-ext') as HTMLSelectElement).value,
-          size: (document.getElementById('doc-form-size') as HTMLInputElement).value,
+          size: calcSize,
           date: (document.getElementById('doc-form-date') as HTMLInputElement).value,
           downloads: idVal ? existingDoc?.downloads || 0 : 0,
           content: (document.getElementById('doc-form-content') as HTMLTextAreaElement).value,
