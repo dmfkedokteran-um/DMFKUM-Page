@@ -1,4 +1,4 @@
-import { r as readCloudDB, w as writeCloudDB } from '../../chunks/db_DX2jmjHT.mjs';
+import { r as readCloudDB, w as writeCloudDB } from '../../chunks/db_Bf1Vi0E9.mjs';
 import { d as defaultNewsData } from '../../chunks/news_D-Oe0h1A.mjs';
 export { renderers } from '../../renderers.mjs';
 

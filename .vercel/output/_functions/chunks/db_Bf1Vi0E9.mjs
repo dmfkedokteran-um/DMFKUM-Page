@@ -122,4 +122,4 @@ async function writeCloudDB(key, data) {
   } catch (e) {}
 }
 
-export { getDbCredentials as g, readCloudDB as r, writeCloudDB as w };
+export { readCloudDB as r, writeCloudDB as w };
