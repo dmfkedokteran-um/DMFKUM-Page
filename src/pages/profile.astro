@@ -665,6 +665,60 @@ const org = siteSettings.orgStructure;
       }
     }
 
+    // 🌐 Fetch latest settings from server to sync profile across devices
+    fetch('/api/settings')
+      .then(res => res.ok ? res.json() : null)
+      .then(serverSettings => {
+        if (serverSettings && typeof serverSettings === 'object') {
+          const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          const merged = { ...current, ...serverSettings };
+          const currentStr = localStorage.getItem('dmfk_settings');
+          const mergedStr = JSON.stringify(merged);
+          if (mergedStr !== currentStr) {
+            localStorage.setItem('dmfk_settings', mergedStr);
+            // Update Visi
+            if (merged.visi) {
+              const visiEl = document.getElementById('visi-text');
+              if (visiEl) visiEl.textContent = `"${merged.visi}"`;
+            }
+            // Update Misi
+            if (Array.isArray(merged.misi) && merged.misi.length > 0) {
+              const misiContainer = document.getElementById('misi-container');
+              if (misiContainer) {
+                misiContainer.innerHTML = merged.misi.map((m: string, i: number) => `
+                  <div class="flex items-start gap-4 p-5 rounded-2xl bg-gray-50/80 border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
+                    <span class="flex shrink-0 w-9 h-9 rounded-xl bg-rose-100 text-rose-700 font-extrabold flex items-center justify-center text-base group-hover:scale-110 transition-transform">0${i + 1}</span>
+                    <p class="text-gray-700 font-medium leading-relaxed my-auto text-base sm:text-lg">${m}</p>
+                  </div>
+                `).join('');
+              }
+            }
+            // Update Org Header
+            if (merged.parliamentName) {
+              const el = document.getElementById('parliament-name-text');
+              if (el) el.textContent = merged.parliamentName;
+            }
+            if (merged.parliamentLogo) {
+              const el = document.getElementById('parliament-logo-img') as HTMLImageElement | null;
+              if (el) el.src = merged.parliamentLogo;
+            }
+            if (merged.orgTitle) {
+              const el = document.getElementById('org-title-text');
+              if (el) el.textContent = merged.orgTitle;
+            }
+            if (merged.orgSubtitle) {
+              const el = document.getElementById('org-subtitle-text');
+              if (el) el.textContent = merged.orgSubtitle;
+            }
+            if (merged.orgBgUrl) {
+              const el = document.getElementById('org-bg-container');
+              if (el) el.style.backgroundImage = `url('${merged.orgBgUrl}')`;
+            }
+          }
+        }
+      })
+      .catch(() => {});
+
     if (profileForm && profileModal) {
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();

@@ -1,25 +1,12 @@
-import fs from 'fs/promises';
-import path from 'path';
+import { readCloudDB, writeCloudDB } from '../../lib/db.js';
 import defaultSettingsData from '../../../database/settings.json';
 
-const DB_PATH = path.resolve(process.cwd(), 'database/settings.json');
-
 async function readDB() {
-  try {
-    const data = await fs.readFile(DB_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return defaultSettingsData;
-  }
+  return await readCloudDB('settings', defaultSettingsData);
 }
 
 async function writeDB(data) {
-  try {
-    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    // Graceful fallback for read-only serverless environments
-  }
+  await writeCloudDB('settings', data);
 }
 
 // Delete physical upload file from both public/uploads and dist/client/uploads

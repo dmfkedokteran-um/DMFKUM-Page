@@ -1,27 +1,14 @@
-import fs from 'fs/promises';
-import path from 'path';
+import { readCloudDB, writeCloudDB } from '../../lib/db.js';
 import defaultDocsData from '../../../database/docs.json';
-
-const DB_PATH = path.resolve(process.cwd(), 'database/docs.json');
 
 // Helper to read database
 async function readDB() {
-  try {
-    const data = await fs.readFile(DB_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return defaultDocsData;
-  }
+  return await readCloudDB('docs', defaultDocsData);
 }
 
 // Helper to write database
 async function writeDB(data) {
-  try {
-    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    // Graceful fallback for read-only serverless environments
-  }
+  await writeCloudDB('docs', data);
 }
 
 // Delete physical upload file from disk

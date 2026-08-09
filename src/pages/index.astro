@@ -274,6 +274,22 @@ const docsList = defaultDocsData || MOCK_DOCS;
       } catch (e) {}
     }
 
+    // 🌐 Fetch latest settings from server to sync hero image across devices
+    fetch('/api/settings')
+      .then(res => res.ok ? res.json() : null)
+      .then(serverSettings => {
+        if (serverSettings && typeof serverSettings === 'object') {
+          const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          const merged = { ...current, ...serverSettings };
+          localStorage.setItem('dmfk_settings', JSON.stringify(merged));
+          if (merged.heroImage) {
+            const heroBg = document.getElementById('hero-bg-overlay');
+            if (heroBg) heroBg.style.backgroundImage = `url('${merged.heroImage}')`;
+          }
+        }
+      })
+      .catch(() => {});
+
     // Toggle Admin Edit Buttons Visibility
     const adminControls = document.querySelectorAll('.admin-only');
     adminControls.forEach(el => {

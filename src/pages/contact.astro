@@ -242,6 +242,42 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
       } catch (e) {}
     }
 
+    // 🌐 Fetch latest settings from server to sync contact info across devices
+    fetch('/api/settings')
+      .then(res => res.ok ? res.json() : null)
+      .then(serverSettings => {
+        if (serverSettings && typeof serverSettings === 'object') {
+          const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+          const merged = { ...current, ...serverSettings };
+          const currentStr = localStorage.getItem('dmfk_settings');
+          const mergedStr = JSON.stringify(merged);
+          if (mergedStr !== currentStr) {
+            localStorage.setItem('dmfk_settings', mergedStr);
+            if (merged.contactEmail) {
+              const el = document.getElementById('contact-email-text');
+              if (el) { el.textContent = merged.contactEmail; (el as HTMLAnchorElement).href = `mailto:${merged.contactEmail}`; }
+            }
+            if (merged.contactPhone) {
+              const el = document.getElementById('contact-phone-text');
+              if (el) { el.textContent = merged.contactPhone; (el as HTMLAnchorElement).href = `https://wa.me/${merged.contactPhone.replace(/[^0-9]/g, '')}`; }
+            }
+            if (merged.contactInstagram) {
+              const el = document.getElementById('contact-instagram-text');
+              if (el) { el.textContent = merged.contactInstagram; (el as HTMLAnchorElement).href = `https://instagram.com/${merged.contactInstagram.replace('@', '')}`; }
+            }
+            if (merged.contactLinktree) {
+              const el = document.getElementById('contact-linktree-text');
+              if (el) { el.textContent = merged.contactLinktree; (el as HTMLAnchorElement).href = merged.contactLinktree.startsWith('http') ? merged.contactLinktree : `https://${merged.contactLinktree}`; }
+            }
+            if (merged.contactAddress) {
+              const el = document.getElementById('contact-address-text');
+              if (el) el.textContent = merged.contactAddress;
+            }
+          }
+        }
+      })
+      .catch(() => {});
+
     // Show/Hide Admin Controls
     const adminControls = document.querySelectorAll('.admin-only');
     adminControls.forEach(el => {
