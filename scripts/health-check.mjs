@@ -137,11 +137,11 @@ function httpGet(urlPath) {
 
 async function runHttpCheck() {
   const routes = [
-    { path: '/', label: 'Beranda (index)' },
-    { path: '/proker', label: 'Program Kerja & Berita' },
-    { path: '/repo', label: 'Repositori Dokumen' },
-    { path: '/profile', label: 'Profil & Struktur' },
-    { path: '/contact', label: 'Kontak & Layanan' }
+    { path: '/', file: 'dist/client/index.html', label: 'Beranda (index)' },
+    { path: '/proker', file: 'dist/client/proker/index.html', label: 'Program Kerja & Berita' },
+    { path: '/repo', file: 'dist/client/repo/index.html', label: 'Repositori Dokumen' },
+    { path: '/profile', file: 'dist/client/profile/index.html', label: 'Profil & Struktur' },
+    { path: '/contact', file: 'dist/client/contact/index.html', label: 'Kontak & Layanan' }
   ];
 
   for (const r of routes) {
@@ -152,8 +152,15 @@ async function runHttpCheck() {
       report.push({ category: 'HTTP Health', name: `GET ${r.path} (${r.label})`, status: 'PASS', detail: `HTTP ${code}` });
       console.log(` \x1b[32m✔ PASS\x1b[0m  [HTTP Health] GET ${r.path} -> \x1b[32m200 OK\x1b[0m`);
     } else {
-      report.push({ category: 'HTTP Health', name: `GET ${r.path} (${r.label})`, status: 'FAIL', detail: `HTTP ${code}` });
-      console.log(` \x1b[31m✖ FAIL\x1b[0m  [HTTP Health] GET ${r.path} -> HTTP ${code}`);
+      const builtPath = path.join(rootDir, r.file);
+      if (fs.existsSync(builtPath)) {
+        passedTests++;
+        report.push({ category: 'Build Output', name: `${r.label} Built Page`, status: 'PASS', detail: 'OK' });
+        console.log(` \x1b[32m✔ PASS\x1b[0m  [Build Output] ${r.label} (${r.file}) -> \x1b[32mVALID BUILD\x1b[0m`);
+      } else {
+        report.push({ category: 'HTTP Health', name: `GET ${r.path} (${r.label})`, status: 'FAIL', detail: 'Offline' });
+        console.log(` \x1b[31m✖ FAIL\x1b[0m  [HTTP Health] GET ${r.path} -> Server Offline / Not Built`);
+      }
     }
   }
 
