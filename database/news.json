@@ -1,14 +1,12 @@
 [
   {
-    "id": 1786252617309,
-    "title": "hhhhh",
-    "category": "advokasi",
-    "date": "9 Agt 2026",
-    "tags": [
-      "kjsdnfaks"
-    ],
-    "image": "/uploads/1786252617341_30_e-paper_Tugu_Malang_22_Juli_FK_UM_Laksanakan_Edukasi.jpg",
-    "excerpt": "ini adalah tes",
-    "content": "jadi bisa dites apakah berhasil atau tidak"
+    "id": 1,
+    "title": "Sidang Paripurna I Parlemen Meliora 2026",
+    "category": "Komisi I",
+    "date": "10 Agustus 2026",
+    "tags": ["Parlemen", "Sidang"],
+    "image": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
+    "excerpt": "Pelaksanaan Sidang Paripurna I Parlemen Meliora DMFK UM dalam menetapkan ketetapan legislatif.",
+    "content": "Pelaksanaan Sidang Paripurna I Parlemen Meliora DMFK UM berjalan dengan lancar."
   }
 ]
