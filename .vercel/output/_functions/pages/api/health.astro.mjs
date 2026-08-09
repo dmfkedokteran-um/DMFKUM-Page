@@ -2,50 +2,35 @@ export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
 
+// Completely standalone - no imports whatsoever
 async function GET() {
+  const result = {};
+
   try {
-    const envKeys = Object.keys(process.env || {});
-    const kvKeys = envKeys.filter(k => 
+    // Collect all env keys
+    result.allEnvCount = Object.keys(process.env || {}).length;
+    result.kvKeys = Object.keys(process.env || {}).filter(k =>
       k.includes('KV') || k.includes('REDIS') || k.includes('UPSTASH') || k.includes('STORAGE')
     );
 
-    let url = process.env.UPSTASH_REDIS_REST_URL ||
-              process.env.KV_REST_API_URL ||
-              process.env.STORAGE_KV_REST_API_URL ||
-              process.env.STORAGE_REST_API_URL ||
-              process.env.STORAGE_URL;
+    // Find REST URL
+    let url = null;
+    let token = null;
 
-    let token = process.env.UPSTASH_REDIS_REST_TOKEN ||
-                process.env.KV_REST_API_TOKEN ||
-                process.env.STORAGE_KV_REST_API_TOKEN ||
-                process.env.STORAGE_REST_API_TOKEN ||
-                process.env.STORAGE_TOKEN;
-
-    if (url && typeof url === 'string' && !url.startsWith('http://') && !url.startsWith('https://')) {
-      url = null;
-    }
-
-    // Dynamic fallback scanner over process.env if standard names differ
-    if (!url || !token) {
-      for (const [key, value] of Object.entries(process.env || {})) {
-        if (!value || typeof value !== 'string') continue;
-        const upper = key.toUpperCase();
-        if (!url && upper.includes('REST') && upper.includes('URL')) {
-          if (value.startsWith('http://') || value.startsWith('https://')) {
-            url = value;
-          }
-        }
-        if (!token && upper.includes('REST') && (upper.includes('TOKEN') || upper.includes('KEY'))) {
-          if (!upper.includes('READ_ONLY') && value.length > 15) {
-            token = value;
-          }
-        }
+    for (const [key, val] of Object.entries(process.env || {})) {
+      if (!val || typeof val !== 'string') continue;
+      const k = key.toUpperCase();
+      if (!url && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && k.includes('URL') && val.startsWith('https://')) {
+        url = val;
+      }
+      if (!token && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && (k.includes('TOKEN') || k.includes('SECRET')) && val.length > 10) {
+        token = val;
       }
     }
 
-    let isCloudConnected = false;
-    let statusMsg = "No cloud credentials found in process.env";
-    let rawResult = null;
+    result.hasUrl = !!url;
+    result.hasToken = !!token;
+    result.urlPreview = url ? url.substring(0, 35) + '...' : null;
 
     if (url && token) {
       const res = await fetch(url, {
@@ -54,41 +39,25 @@ async function GET() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(["GET", "dmfk_news"])
+        body: JSON.stringify(['GET', 'dmfk_news'])
       });
-
       const text = await res.text();
-      rawResult = { httpStatus: res.status, body: text };
-      if (res.ok) {
-        isCloudConnected = true;
-        statusMsg = "Successfully connected to Vercel KV Cloud DB";
-      } else {
-        statusMsg = `HTTP Error ${res.status}: ${text}`;
-      }
+      result.httpStatus = res.status;
+      result.body = text.substring(0, 200);
+      result.isCloudConnected = res.ok;
+    } else {
+      result.isCloudConnected = false;
+      result.note = 'No Upstash/KV REST credentials found in environment';
     }
-
-    return new Response(JSON.stringify({
-      status: 'ok',
-      statusMsg,
-      isCloudConnected,
-      hasUrl: !!url,
-      hasToken: !!token,
-      urlPreview: url ? url.substring(0, 30) + '...' : null,
-      foundKvKeys: kvKeys,
-      rawResult
-    }, null, 2), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
   } catch (err) {
-    return new Response(JSON.stringify({
-      status: 'error',
-      error: String(err && err.stack ? err.stack : err)
-    }, null, 2), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    result.error = String(err && err.stack ? err.stack : err);
+    result.isCloudConnected = false;
   }
+
+  return new Response(JSON.stringify({ status: 'ok', ...result }, null, 2), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
 }
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
