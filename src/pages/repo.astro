@@ -454,7 +454,7 @@ const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData
     }
 
     const handleDownload = async (doc: DocItem) => {
-      doc.downloads = doc.downloads + 1;
+      doc.downloads = (doc.downloads || 0) + 1;
       const countSpan = document.getElementById(`downloads-count-${doc.id}`);
       if (countSpan) {
         countSpan.textContent = `${doc.downloads} Unduhan`;
@@ -464,36 +464,64 @@ const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(doc)
-      });
+      }).catch(() => {});
+
+      const sanitizeName = (doc.title || 'dokumen').replace(/[^a-zA-Z0-9_\- ]/g, '_');
+      const extStr = (doc.ext || 'pdf').toLowerCase();
+      const fileName = `${sanitizeName}.${extStr}`;
 
       if (doc.fileUrl) {
-        const a = document.createElement('a');
-        a.href = doc.fileUrl;
-        a.download = `${doc.title}.${doc.ext.toLowerCase()}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        if (doc.fileUrl.startsWith('http://') || doc.fileUrl.startsWith('https://')) {
+          window.open(doc.fileUrl, '_blank');
+        } else if (doc.fileUrl.startsWith('data:')) {
+          try {
+            const parts = doc.fileUrl.split(';base64,');
+            const contentType = parts[0].split(':')[1] || 'application/pdf';
+            const raw = window.atob(parts[1]);
+            const uInt8Array = new Uint8Array(raw.length);
+            for (let i = 0; i < raw.length; ++i) uInt8Array[i] = raw.charCodeAt(i);
+            const blob = new Blob([uInt8Array], { type: contentType });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+          } catch (e) {
+            window.open(doc.fileUrl, '_blank');
+          }
+        } else {
+          const a = document.createElement('a');
+          a.href = doc.fileUrl;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
       } else {
         const fileBlob = await getFileFromDB(doc.id);
         if (fileBlob) {
           const url = URL.createObjectURL(fileBlob as Blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${doc.title}.${doc.ext.toLowerCase()}`;
+          a.download = fileName;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+          setTimeout(() => URL.revokeObjectURL(url), 10000);
         } else {
-          const blob = new Blob([doc.content || "Konten simulasi."], { type: 'text/plain' });
+          const blob = new Blob([doc.content || "Dokumen Resmi DMFK UM."], { type: 'text/plain;charset=utf-8' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${doc.title}.txt`;
+          a.download = `${sanitizeName}.txt`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+          setTimeout(() => URL.revokeObjectURL(url), 10000);
         }
       }
     };
@@ -635,16 +663,43 @@ const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData
       previewModal.addEventListener('click', (e) => { if (e.target === previewModal) closeHandler(); });
     }
 
-    const items = container.querySelectorAll('.doc-item');
-    items.forEach(row => {
-      const docId = parseInt(row.getAttribute('data-id') || '0');
-      const doc = docsList.find(d => d.id === docId);
-      if (!doc) return;
+    // Global Event Delegation on container for dynamic & pre-rendered document items
+    container.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
 
-      row.querySelector('.open-doc-btn')?.addEventListener('click', () => openPreviewModal(doc));
-      row.querySelector('.download-btn')?.addEventListener('click', () => handleDownload(doc));
-      row.querySelector('.edit-doc-btn')?.addEventListener('click', (e) => { e.stopPropagation(); openFormModal(doc); });
-      row.querySelector('.delete-doc-btn')?.addEventListener('click', (e) => { e.stopPropagation(); if (confirm(`Hapus "${doc.title}"?`)) deleteDoc(doc.id); });
+      const editBtn = target.closest('.edit-doc-btn') as HTMLElement | null;
+      if (editBtn) {
+        e.stopPropagation();
+        const id = parseInt(editBtn.getAttribute('data-id') || '0');
+        const doc = docsList.find(d => d.id === id);
+        if (doc) openFormModal(doc);
+        return;
+      }
+
+      const deleteBtn = target.closest('.delete-doc-btn') as HTMLElement | null;
+      if (deleteBtn) {
+        e.stopPropagation();
+        const id = parseInt(deleteBtn.getAttribute('data-id') || '0');
+        const doc = docsList.find(d => d.id === id);
+        if (doc && confirm(`Apakah Anda yakin ingin menghapus dokumen "${doc.title}"?`)) deleteDoc(doc.id);
+        return;
+      }
+
+      const dlBtn = target.closest('.download-btn') as HTMLElement | null;
+      if (dlBtn) {
+        e.stopPropagation();
+        const id = parseInt(dlBtn.getAttribute('data-id') || '0');
+        const doc = docsList.find(d => d.id === id);
+        if (doc) handleDownload(doc);
+        return;
+      }
+
+      const row = target.closest('.doc-item') as HTMLElement | null;
+      if (row) {
+        const id = parseInt(row.getAttribute('data-id') || '0');
+        const doc = docsList.find(d => d.id === id);
+        if (doc) openPreviewModal(doc);
+      }
     });
 
     const docFormModal = document.getElementById('doc-form-modal') as HTMLDialogElement | null;

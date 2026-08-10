@@ -264,9 +264,9 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
     function renderNewsCards(items: NewsItem[]) {
       if (!container) return;
       container.innerHTML = items.map(news => `
-        <div class="news-card group flex flex-col sm:flex-row bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl border border-gray-50 overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer" data-id="${news.id}">
-          <div class="sm:w-2/5 relative overflow-hidden">
-            <img src="${news.image}" alt="${news.title}" class="news-card-img w-full h-full object-cover min-h-[200px] group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+        <div class="news-card group flex flex-col md:flex-row bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer w-full min-h-[240px]" data-id="${news.id}">
+          <div class="md:w-2/5 h-52 md:h-auto relative overflow-hidden shrink-0 bg-gray-100">
+            <img src="${news.image}" alt="${news.title}" class="news-card-img w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
             <div class="admin-only ${isAdmin ? '' : 'hidden'} absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
               <button class="edit-news-btn p-2 bg-white/90 backdrop-blur-md rounded-xl text-blue-600 hover:bg-blue-50 hover:scale-110 transition-all shadow-sm cursor-pointer outline-none" data-id="${news.id}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -276,19 +276,23 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
               </button>
             </div>
           </div>
-          <div class="p-6 sm:w-3/5 flex flex-col justify-center">
-            <div class="flex items-center gap-3 mb-3">
-              <span class="text-xs font-bold px-3 py-1.5 bg-rose-50 text-rose-700 rounded-full">${news.category}</span>
-              <span class="text-xs font-medium text-gray-400">${news.date}</span>
+          <div class="p-6 md:w-3/5 flex flex-col justify-between flex-1">
+            <div>
+              <div class="flex items-center gap-3 mb-2.5">
+                <span class="text-xs font-bold px-3 py-1 bg-rose-50 text-rose-700 rounded-full shrink-0">${news.category}</span>
+                <span class="text-xs font-medium text-gray-400 shrink-0">${news.date}</span>
+              </div>
+              <h3 class="font-extrabold text-lg sm:text-xl text-gray-900 mb-2 leading-snug line-clamp-2 group-hover:text-rose-700 transition-colors">${news.title}</h3>
+              <p class="text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed">${news.excerpt || ''}</p>
             </div>
-            <h3 class="font-extrabold text-xl text-gray-900 mb-3 leading-tight group-hover:text-rose-700 transition-colors">${news.title}</h3>
-            <p class="text-gray-500 text-sm mb-5 line-clamp-2 leading-relaxed">${news.excerpt}</p>
-            <div class="flex flex-wrap gap-2 mt-auto mb-3">
-              ${(news.tags || []).map((tag: string) => `<span class="text-[10px] font-bold text-gray-400 bg-gray-100/80 px-2.5 py-1 rounded-md uppercase tracking-wider">#${tag}</span>`).join('')}
+            <div>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                ${(news.tags || []).map((tag: string) => `<span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md uppercase tracking-wider">#${tag}</span>`).join('')}
+              </div>
+              <div class="text-rose-600 font-bold text-sm flex items-center gap-2 group-hover:gap-3 transition-all">
+                Baca Selengkapnya <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
             </div>
-            <button class="text-rose-600 font-bold text-sm flex items-center gap-2 group-hover:gap-3 transition-all outline-none">
-              Selengkapnya <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
           </div>
         </div>
       `).join('');
@@ -438,32 +442,36 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       });
     }
 
-    // Attach listeners to pre-rendered news cards
-    const cards = container.querySelectorAll('.news-card');
-    cards.forEach(card => {
-      const newsId = parseInt(card.getAttribute('data-id') || '0');
-      const news = newsList.find(n => n.id === newsId);
-      if (!news) return;
+    // Global Event Delegation on container for dynamic & pre-rendered news cards
+    container.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
 
-      // Add click to card (except buttons)
-      card.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        if (!target.closest('.edit-news-btn') && !target.closest('.delete-news-btn')) {
-          openPreviewModal(news);
-        }
-      });
-
-      card.querySelector('.edit-news-btn')?.addEventListener('click', (e) => {
+      const editBtn = target.closest('.edit-news-btn') as HTMLElement | null;
+      if (editBtn) {
         e.stopPropagation();
-        openFormModal(news);
-      });
+        const id = parseInt(editBtn.getAttribute('data-id') || '0');
+        const news = newsList.find(n => n.id === id);
+        if (news) openFormModal(news);
+        return;
+      }
 
-      card.querySelector('.delete-news-btn')?.addEventListener('click', (e) => {
+      const deleteBtn = target.closest('.delete-news-btn') as HTMLElement | null;
+      if (deleteBtn) {
         e.stopPropagation();
-        if (confirm(`Apakah Anda yakin ingin menghapus berita "${news.title}"?`)) {
+        const id = parseInt(deleteBtn.getAttribute('data-id') || '0');
+        const news = newsList.find(n => n.id === id);
+        if (news && confirm(`Apakah Anda yakin ingin menghapus berita "${news.title}"?`)) {
           deleteNews(news.id);
         }
-      });
+        return;
+      }
+
+      const card = target.closest('.news-card') as HTMLElement | null;
+      if (card) {
+        const id = parseInt(card.getAttribute('data-id') || '0');
+        const news = newsList.find(n => n.id === id);
+        if (news) openPreviewModal(news);
+      }
     });
 
     // Form Modal logic (Add/Edit)
