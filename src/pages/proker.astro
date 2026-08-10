@@ -442,6 +442,29 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       });
     }
 
+    // CRUD Helper functions
+    async function deleteNews(targetId: string | number) {
+      newsList = newsList.filter((n: any) => String(n.id) !== String(targetId));
+      localStorage.setItem('dmfk_news', JSON.stringify(newsList));
+      renderNewsCards(newsList);
+
+      try {
+        const res = await fetch('/api/news', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: targetId })
+        });
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData && Array.isArray(resData.news)) {
+            localStorage.setItem('dmfk_news', JSON.stringify(resData.news));
+            newsList = resData.news;
+            renderNewsCards(newsList);
+          }
+        }
+      } catch (_) {}
+    }
+
     // Global Event Delegation on container for dynamic & pre-rendered news cards
     container.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -449,8 +472,8 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       const editBtn = target.closest('.edit-news-btn') as HTMLElement | null;
       if (editBtn) {
         e.stopPropagation();
-        const id = parseInt(editBtn.getAttribute('data-id') || '0');
-        const news = newsList.find(n => n.id === id);
+        const rawId = editBtn.getAttribute('data-id');
+        const news = newsList.find(n => String(n.id) === String(rawId));
         if (news) openFormModal(news);
         return;
       }
@@ -458,8 +481,8 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
       const deleteBtn = target.closest('.delete-news-btn') as HTMLElement | null;
       if (deleteBtn) {
         e.stopPropagation();
-        const id = parseInt(deleteBtn.getAttribute('data-id') || '0');
-        const news = newsList.find(n => n.id === id);
+        const rawId = deleteBtn.getAttribute('data-id');
+        const news = newsList.find(n => String(n.id) === String(rawId));
         if (news && confirm(`Apakah Anda yakin ingin menghapus berita "${news.title}"?`)) {
           deleteNews(news.id);
         }
@@ -468,8 +491,8 @@ const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgSt
 
       const card = target.closest('.news-card') as HTMLElement | null;
       if (card) {
-        const id = parseInt(card.getAttribute('data-id') || '0');
-        const news = newsList.find(n => n.id === id);
+        const rawId = card.getAttribute('data-id');
+        const news = newsList.find(n => String(n.id) === String(rawId));
         if (news) openPreviewModal(news);
       }
     });

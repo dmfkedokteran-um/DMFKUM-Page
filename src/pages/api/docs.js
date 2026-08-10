@@ -81,12 +81,12 @@ export async function DELETE({ request }) {
     const { data: docs } = await readCloudDB('docs', defaultDocsData);
     
     // Find target document item to delete physical file from server disk
-    const target = docs.find(item => item.id === id);
+    const target = docs.find(item => String(item.id) === String(id));
     if (target && target.fileUrl) {
       await deletePhysicalUploadFile(target.fileUrl);
     }
 
-    const updatedDocs = docs.filter(item => item.id !== id);
+    const updatedDocs = docs.filter(item => String(item.id) !== String(id));
     await writeDB(updatedDocs);
 
     return new Response(JSON.stringify({ success: true, docs: updatedDocs }), {

@@ -80,12 +80,12 @@ export async function DELETE({ request }) {
     const { data: news } = await readCloudDB('news', defaultNewsData);
     
     // Find target item to delete cover image file from server disk
-    const target = news.find(item => item.id === id);
+    const target = news.find(item => String(item.id) === String(id));
     if (target && target.image) {
       await deletePhysicalUploadFile(target.image);
     }
 
-    const updatedNews = news.filter(item => item.id !== id);
+    const updatedNews = news.filter(item => String(item.id) !== String(id));
     await writeDB(updatedNews);
 
     return new Response(JSON.stringify({ success: true, news: updatedNews }), {

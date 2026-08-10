@@ -526,28 +526,26 @@ const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData
       }
     };
 
-    async function deleteDoc(id: number) {
-      // Remove from localStorage immediately
-      const cached = JSON.parse(localStorage.getItem('dmfk_docs') || 'null');
-      if (cached) {
-        const updated = cached.filter((d: any) => String(d.id) !== String(id));
-        localStorage.setItem('dmfk_docs', JSON.stringify(updated));
-      }
-      // Try server delete — send id in JSON body
+    async function deleteDoc(targetId: string | number) {
+      docsList = docsList.filter((d: any) => String(d.id) !== String(targetId));
+      localStorage.setItem('dmfk_docs', JSON.stringify(docsList));
+      renderDocsCards(docsList);
+
       try {
         const res = await fetch('/api/docs', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
+          body: JSON.stringify({ id: targetId })
         });
         if (res.ok) {
           const resData = await res.json();
           if (resData && Array.isArray(resData.docs)) {
             localStorage.setItem('dmfk_docs', JSON.stringify(resData.docs));
+            docsList = resData.docs;
+            renderDocsCards(docsList);
           }
         }
       } catch (_) {}
-      window.location.reload();
     }
 
     function getDriveFileId(url: string): string | null {
@@ -670,8 +668,8 @@ const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData
       const editBtn = target.closest('.edit-doc-btn') as HTMLElement | null;
       if (editBtn) {
         e.stopPropagation();
-        const id = parseInt(editBtn.getAttribute('data-id') || '0');
-        const doc = docsList.find(d => d.id === id);
+        const rawId = editBtn.getAttribute('data-id');
+        const doc = docsList.find(d => String(d.id) === String(rawId));
         if (doc) openFormModal(doc);
         return;
       }
@@ -679,8 +677,8 @@ const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData
       const deleteBtn = target.closest('.delete-doc-btn') as HTMLElement | null;
       if (deleteBtn) {
         e.stopPropagation();
-        const id = parseInt(deleteBtn.getAttribute('data-id') || '0');
-        const doc = docsList.find(d => d.id === id);
+        const rawId = deleteBtn.getAttribute('data-id');
+        const doc = docsList.find(d => String(d.id) === String(rawId));
         if (doc && confirm(`Apakah Anda yakin ingin menghapus dokumen "${doc.title}"?`)) deleteDoc(doc.id);
         return;
       }
@@ -688,16 +686,16 @@ const docs = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData
       const dlBtn = target.closest('.download-btn') as HTMLElement | null;
       if (dlBtn) {
         e.stopPropagation();
-        const id = parseInt(dlBtn.getAttribute('data-id') || '0');
-        const doc = docsList.find(d => d.id === id);
+        const rawId = dlBtn.getAttribute('data-id');
+        const doc = docsList.find(d => String(d.id) === String(rawId));
         if (doc) handleDownload(doc);
         return;
       }
 
       const row = target.closest('.doc-item') as HTMLElement | null;
       if (row) {
-        const id = parseInt(row.getAttribute('data-id') || '0');
-        const doc = docsList.find(d => d.id === id);
+        const rawId = row.getAttribute('data-id');
+        const doc = docsList.find(d => String(d.id) === String(rawId));
         if (doc) openPreviewModal(doc);
       }
     });
