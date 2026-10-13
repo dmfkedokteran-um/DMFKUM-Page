@@ -1,0 +1,17 @@
+name: Database Keep-Alive Heartbeat
+
+on:
+  schedule:
+    # Runs every 3 days at 02:00 UTC (keeps Upstash DB active forever)
+    - cron: '0 2 */3 * *'
+  workflow_dispatch: # Allows manual triggering from GitHub Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Live Website & Cloud Database
+        run: |
+          echo "Sending keep-alive heartbeat ping to DMFK UM..."
+          curl -s -f -m 30 "https://dmfkum-page.vercel.app/api/health" || true
+          echo "Keep-alive ping completed successfully."

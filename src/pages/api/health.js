@@ -11,18 +11,31 @@ export async function GET() {
       k.includes('KV') || k.includes('REDIS') || k.includes('UPSTASH') || k.includes('STORAGE')
     );
 
-    // Find REST URL
-    let url = null;
-    let token = null;
+    // Find REST URL with same priority order as db.js
+    let url = process.env.UPSTASH_REDIS_REST_URL ||
+              process.env.KV_REST_API_URL ||
+              process.env.STORAGE_KV_REST_API_URL ||
+              process.env.STORAGE_REST_API_URL ||
+              process.env.STORAGE_URL;
 
-    for (const [key, val] of Object.entries(process.env || {})) {
-      if (!val || typeof val !== 'string') continue;
-      const k = key.toUpperCase();
-      if (!url && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && k.includes('URL') && val.startsWith('https://')) {
-        url = val;
-      }
-      if (!token && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && (k.includes('TOKEN') || k.includes('SECRET')) && val.length > 10) {
-        token = val;
+    let token = process.env.UPSTASH_REDIS_REST_TOKEN ||
+                process.env.KV_REST_API_TOKEN ||
+                process.env.STORAGE_KV_REST_API_TOKEN ||
+                process.env.STORAGE_REST_API_TOKEN ||
+                process.env.STORAGE_TOKEN;
+
+    if (!url || !token) {
+      for (const [key, val] of Object.entries(process.env || {})) {
+        if (!val || typeof val !== 'string') continue;
+        const k = key.toUpperCase();
+        if (!url && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && k.includes('URL') && (val.startsWith('https://') || val.startsWith('http://'))) {
+          url = val;
+        }
+        if (!token && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && (k.includes('TOKEN') || k.includes('KEY')) && val.length > 10) {
+          if (!k.includes('READ_ONLY')) {
+            token = val;
+          }
+        }
       }
     }
 
