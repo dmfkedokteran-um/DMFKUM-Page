@@ -1,9 +1,3 @@
 {
-  "cleanUrls": true,
-  "crons": [
-    {
-      "path": "/api/health",
-      "schedule": "0 1 * * *"
-    }
-  ]
+  "cleanUrls": true
 }

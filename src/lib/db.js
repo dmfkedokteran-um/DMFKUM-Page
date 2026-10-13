@@ -1,3 +1,26 @@
+export function getFirebaseCredentials() {
+  let url = process.env.FIREBASE_DATABASE_URL ||
+            process.env.FIREBASE_URL ||
+            process.env.FIREBASE_RTDB_URL ||
+            process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
+
+  let secret = process.env.FIREBASE_DATABASE_SECRET ||
+               process.env.FIREBASE_AUTH_TOKEN ||
+               process.env.FIREBASE_SECRET ||
+               process.env.FIREBASE_TOKEN;
+
+  if (url && typeof url === 'string') {
+    url = url.trim().replace(/\/+$/, '');
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+  } else {
+    url = null;
+  }
+
+  return { url, secret };
+}
+
 export function getDbCredentials() {
   let url = process.env.UPSTASH_REDIS_REST_URL ||
             process.env.KV_REST_API_URL ||
@@ -38,10 +61,42 @@ export function getDbCredentials() {
 }
 
 /**
- * Reads data from Cloud Database (Upstash Redis REST / Vercel KV).
- * Returns { data, isCloud: boolean }.
+ * Reads data from Cloud Database.
+ * Priority: 1. Firebase Realtime Database (Permanent, No 14-day inactivity purge)
+ *           2. Upstash Redis REST / Vercel KV
+ *           3. Local filesystem JSON fallback
+ * Returns { data, isCloud: boolean, provider: string }.
  */
 export async function readCloudDB(key, fallbackData) {
+  // 1. Firebase Realtime Database
+  try {
+    const { url: firebaseUrl, secret: firebaseSecret } = getFirebaseCredentials();
+    if (firebaseUrl) {
+      try {
+        const reqUrl = firebaseSecret 
+          ? `${firebaseUrl}/dmfk_${key}.json?auth=${encodeURIComponent(firebaseSecret)}`
+          : `${firebaseUrl}/dmfk_${key}.json`;
+
+        const res = await fetch(reqUrl);
+        if (res.ok) {
+          const json = await res.json();
+          if (json !== null && json !== undefined) {
+            return { data: json, isCloud: true, provider: 'firebase' };
+          }
+          // Connection active (HTTP 200), but key hasn't been written yet
+          return { data: fallbackData, isCloud: true, provider: 'firebase' };
+        } else {
+          console.error(`[FirebaseDB] GET dmfk_${key} HTTP ${res.status}:`, await res.text());
+        }
+      } catch (err) {
+        console.error(`[FirebaseDB] GET dmfk_${key} fetch error:`, err);
+      }
+    }
+  } catch (fbErr) {
+    console.error(`[FirebaseDB] GET dmfk_${key} global error:`, fbErr);
+  }
+
+  // 2. Upstash Redis REST / Vercel KV
   try {
     const { url, token } = getDbCredentials();
 
@@ -60,10 +115,10 @@ export async function readCloudDB(key, fallbackData) {
           const json = await res.json();
           if (json && json.result !== undefined && json.result !== null) {
             const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
-            return { data: parsed, isCloud: true };
+            return { data: parsed, isCloud: true, provider: 'redis' };
           }
           // Connection is active (HTTP 200), but key doesn't exist in Redis yet
-          return { data: fallbackData, isCloud: true };
+          return { data: fallbackData, isCloud: true, provider: 'redis' };
         }
       } catch (err) {
         console.error(`[CloudDB] GET dmfk_${key} fetch error:`, err);
@@ -73,22 +128,55 @@ export async function readCloudDB(key, fallbackData) {
     console.error(`[CloudDB] GET dmfk_${key} global error:`, globalErr);
   }
 
-  // Local filesystem fallback (dynamic import for serverless compatibility)
+  // 3. Local filesystem fallback (dynamic import for serverless compatibility)
   try {
     const fs = await import('node:fs/promises');
     const path = await import('node:path');
     const filePath = path.resolve(process.cwd(), `database/${key}.json`);
     const data = await fs.readFile(filePath, 'utf-8');
-    return { data: JSON.parse(data), isCloud: false };
+    return { data: JSON.parse(data), isCloud: false, provider: 'local' };
   } catch (e) {
-    return { data: fallbackData, isCloud: false };
+    return { data: fallbackData, isCloud: false, provider: 'fallback' };
   }
 }
 
 /**
- * Writes data to Cloud Database (Upstash Redis REST / Vercel KV).
+ * Writes data to Cloud Database.
+ * Priority: 1. Firebase Realtime Database (Permanent, No 14-day inactivity purge)
+ *           2. Upstash Redis REST / Vercel KV
+ *           3. Local filesystem JSON fallback
  */
 export async function writeCloudDB(key, data) {
+  // 1. Firebase Realtime Database
+  try {
+    const { url: firebaseUrl, secret: firebaseSecret } = getFirebaseCredentials();
+    if (firebaseUrl) {
+      try {
+        const reqUrl = firebaseSecret
+          ? `${firebaseUrl}/dmfk_${key}.json?auth=${encodeURIComponent(firebaseSecret)}`
+          : `${firebaseUrl}/dmfk_${key}.json`;
+
+        const res = await fetch(reqUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          console.log(`[FirebaseDB] PUT dmfk_${key} status: ${res.status}`);
+        } else {
+          console.error(`[FirebaseDB] PUT dmfk_${key} failed status: ${res.status}`, await res.text());
+        }
+      } catch (err) {
+        console.error(`[FirebaseDB] PUT dmfk_${key} fetch error:`, err);
+      }
+    }
+  } catch (fbErr) {
+    console.error(`[FirebaseDB] PUT dmfk_${key} global error:`, fbErr);
+  }
+
+  // 2. Upstash Redis REST / Vercel KV
   try {
     const { url, token } = getDbCredentials();
 
@@ -112,7 +200,7 @@ export async function writeCloudDB(key, data) {
     console.error(`[CloudDB] SET dmfk_${key} global error:`, globalErr);
   }
 
-  // Local filesystem fallback write (dynamic import for serverless compatibility)
+  // 3. Local filesystem fallback write (dynamic import for serverless compatibility)
   try {
     const fs = await import('node:fs/promises');
     const path = await import('node:path');

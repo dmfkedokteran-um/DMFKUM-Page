@@ -1,71 +1,102 @@
 export const prerender = false;
 
-// Completely standalone - no imports whatsoever
 export async function GET() {
-  const result = {};
+  const result = {
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  };
 
   try {
-    // Collect all env keys
-    result.allEnvCount = Object.keys(process.env || {}).length;
-    result.kvKeys = Object.keys(process.env || {}).filter(k =>
-      k.includes('KV') || k.includes('REDIS') || k.includes('UPSTASH') || k.includes('STORAGE')
-    );
+    // 1. Check Firebase Realtime Database
+    let firebaseUrl = process.env.FIREBASE_DATABASE_URL ||
+                      process.env.FIREBASE_URL ||
+                      process.env.FIREBASE_RTDB_URL ||
+                      process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
+    let firebaseSecret = process.env.FIREBASE_DATABASE_SECRET ||
+                         process.env.FIREBASE_AUTH_TOKEN ||
+                         process.env.FIREBASE_SECRET ||
+                         process.env.FIREBASE_TOKEN;
 
-    // Find REST URL with same priority order as db.js
-    let url = process.env.UPSTASH_REDIS_REST_URL ||
-              process.env.KV_REST_API_URL ||
-              process.env.STORAGE_KV_REST_API_URL ||
-              process.env.STORAGE_REST_API_URL ||
-              process.env.STORAGE_URL;
-
-    let token = process.env.UPSTASH_REDIS_REST_TOKEN ||
-                process.env.KV_REST_API_TOKEN ||
-                process.env.STORAGE_KV_REST_API_TOKEN ||
-                process.env.STORAGE_REST_API_TOKEN ||
-                process.env.STORAGE_TOKEN;
-
-    if (!url || !token) {
-      for (const [key, val] of Object.entries(process.env || {})) {
-        if (!val || typeof val !== 'string') continue;
-        const k = key.toUpperCase();
-        if (!url && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && k.includes('URL') && (val.startsWith('https://') || val.startsWith('http://'))) {
-          url = val;
-        }
-        if (!token && (k.includes('KV') || k.includes('UPSTASH') || k.includes('REDIS') || k.includes('STORAGE')) && (k.includes('TOKEN') || k.includes('KEY')) && val.length > 10) {
-          if (!k.includes('READ_ONLY')) {
-            token = val;
-          }
-        }
+    if (firebaseUrl && typeof firebaseUrl === 'string') {
+      firebaseUrl = firebaseUrl.trim().replace(/\/+$/, '');
+      if (!firebaseUrl.startsWith('http://') && !firebaseUrl.startsWith('https://')) {
+        firebaseUrl = `https://${firebaseUrl}`;
       }
+      result.firebase = {
+        hasUrl: true,
+        hasSecret: !!firebaseSecret,
+        urlPreview: firebaseUrl.substring(0, 35) + '...'
+      };
+
+      try {
+        const testUrl = firebaseSecret
+          ? `${firebaseUrl}/dmfk_health.json?auth=${encodeURIComponent(firebaseSecret)}`
+          : `${firebaseUrl}/dmfk_health.json`;
+
+        const fbRes = await fetch(testUrl);
+        result.firebase.httpStatus = fbRes.status;
+        result.firebase.connected = fbRes.ok;
+      } catch (fbErr) {
+        result.firebase.connected = false;
+        result.firebase.error = fbErr.message;
+      }
+    } else {
+      result.firebase = { hasUrl: false, connected: false };
     }
 
-    result.hasUrl = !!url;
-    result.hasToken = !!token;
-    result.urlPreview = url ? url.substring(0, 35) + '...' : null;
+    // 2. Check Upstash / KV
+    let redisUrl = process.env.UPSTASH_REDIS_REST_URL ||
+                   process.env.KV_REST_API_URL ||
+                   process.env.STORAGE_KV_REST_API_URL ||
+                   process.env.STORAGE_REST_API_URL;
+    let redisToken = process.env.UPSTASH_REDIS_REST_TOKEN ||
+                     process.env.KV_REST_API_TOKEN ||
+                     process.env.STORAGE_KV_REST_API_TOKEN ||
+                     process.env.STORAGE_REST_API_TOKEN;
 
-    if (url && token) {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(['GET', 'dmfk_news'])
-      });
-      const text = await res.text();
-      result.httpStatus = res.status;
-      result.body = text.substring(0, 200);
-      result.isCloudConnected = res.ok;
+    if (redisUrl && redisToken) {
+      result.redis = {
+        hasUrl: true,
+        hasToken: true,
+        urlPreview: redisUrl.substring(0, 35) + '...'
+      };
+      try {
+        const redRes = await fetch(redisUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${redisToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(['GET', 'dmfk_health'])
+        });
+        result.redis.httpStatus = redRes.status;
+        result.redis.connected = redRes.ok;
+      } catch (redErr) {
+        result.redis.connected = false;
+        result.redis.error = redErr.message;
+      }
+    } else {
+      result.redis = { hasUrl: false, connected: false };
+    }
+
+    // Determine final cloud status and active provider
+    if (result.firebase && result.firebase.connected) {
+      result.isCloudConnected = true;
+      result.activeProvider = 'firebase';
+    } else if (result.redis && result.redis.connected) {
+      result.isCloudConnected = true;
+      result.activeProvider = 'redis';
     } else {
       result.isCloudConnected = false;
-      result.note = 'No Upstash/KV REST credentials found in environment';
+      result.activeProvider = 'local_json';
     }
   } catch (err) {
     result.error = String(err && err.stack ? err.stack : err);
     result.isCloudConnected = false;
+    result.activeProvider = 'local_json';
   }
 
-  return new Response(JSON.stringify({ status: 'ok', ...result }, null, 2), {
+  return new Response(JSON.stringify(result, null, 2), {
     status: 200,
     headers: { 'Content-Type': 'application/json' }
   });
