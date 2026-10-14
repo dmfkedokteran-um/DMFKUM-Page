@@ -93,3 +93,81 @@ export async function commitFileToGitHub(relativeFilePath, content, commitMessag
     return { success: false, error: err.message };
   }
 }
+
+/**
+ * Deletes a file directly from the GitHub repository via GitHub REST API v3.
+ * @param {string} relativeFilePath - Path inside repo (e.g. 'public/uploads/old_pic.jpg')
+ * @param {string} [commitMessage] - Commit message
+ */
+export async function deleteFileFromGitHub(relativeFilePath, commitMessage) {
+  const token = getGitHubToken();
+  if (!token) return { success: false, reason: 'no_token' };
+
+  try {
+    const cleanPath = relativeFilePath.replace(/^\/+/, '');
+    const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${cleanPath}`;
+
+    // Get current file info to retrieve its SHA (required by GitHub delete API)
+    const getRes = await fetch(`${apiUrl}?ref=${REPO_BRANCH}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'DMFKUM-Portal'
+      }
+    });
+
+    if (!getRes.ok) return { success: false, reason: 'file_not_found' };
+    const fileInfo = await getRes.json();
+    if (!fileInfo.sha) return { success: false, reason: 'no_sha' };
+
+    const delRes = await fetch(apiUrl, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'DMFKUM-Portal'
+      },
+      body: JSON.stringify({
+        message: commitMessage || `cleanup: remove ${cleanPath} via portal admin`,
+        sha: fileInfo.sha,
+        branch: REPO_BRANCH
+      })
+    });
+
+    if (delRes.ok) {
+      console.log(`[GitHubSync] Successfully deleted ${cleanPath} from GitHub repository`);
+      return { success: true };
+    } else {
+      console.error(`[GitHubSync] Failed to delete ${cleanPath}:`, await delRes.text());
+      return { success: false };
+    }
+  } catch (err) {
+    console.error(`[GitHubSync] Error deleting ${relativeFilePath}:`, err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Universal upload file deletion helper.
+ * Removes orphaned physical file from both local disk and GitHub repository.
+ * @param {string} fileUrl - URL path starting with /uploads/...
+ */
+export async function deleteUploadFile(fileUrl) {
+  if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.startsWith('/uploads/')) return;
+  const fileName = fileUrl.replace('/uploads/', '');
+
+  // 1. Unlink from local disk / dist
+  try {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const publicPath = path.resolve(process.cwd(), 'public/uploads', fileName);
+    const distPath = path.resolve(process.cwd(), 'dist/client/uploads', fileName);
+    try { await fs.unlink(publicPath); } catch (e) {}
+    try { await fs.unlink(distPath); } catch (e) {}
+  } catch (_) {}
+
+  // 2. Delete from GitHub repository
+  deleteFileFromGitHub(`public/uploads/${fileName}`).catch(() => {});
+}
+

@@ -13,19 +13,11 @@ async function writeDB(data) {
   await writeCloudDB('news', data);
 }
 
-// Delete physical cover image file if present in uploads
-async function deletePhysicalUploadFile(fileUrl) {
-  if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.startsWith('/uploads/')) return;
-  try {
-    const fs = await import('node:fs/promises');
-    const path = await import('node:path');
-    const fileName = fileUrl.replace('/uploads/', '');
-    const publicPath = path.resolve(process.cwd(), 'public/uploads', fileName);
-    const distPath = path.resolve(process.cwd(), 'dist/client/uploads', fileName);
+import { deleteUploadFile } from '../../lib/githubSync.js';
 
-    try { await fs.unlink(publicPath); } catch (e) {}
-    try { await fs.unlink(distPath); } catch (e) {}
-  } catch (_) {}
+// Delete physical cover image file if present in uploads & GitHub
+async function deletePhysicalUploadFile(fileUrl) {
+  await deleteUploadFile(fileUrl);
 }
 
 export async function GET() {
