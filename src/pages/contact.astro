@@ -1,7 +1,8 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { Mail, MessageCircle, Instagram, Link2, Edit, X } from 'lucide-astro';
+import { readCloudDB } from "../lib/db.js";
 import defaultSettingsData from "../../database/settings.json";
 
 const DEFAULT_CONTACT_SETTINGS = {
@@ -12,7 +13,8 @@ const DEFAULT_CONTACT_SETTINGS = {
   contactAddress: "Gedung FK Lt. 2, Universitas Negeri Malang, Jl. Semarang 5, Malang"
 };
 
-const siteSettings = Object.assign({}, DEFAULT_CONTACT_SETTINGS, defaultSettingsData);
+const { data: cloudSettings } = await readCloudDB('settings', defaultSettingsData);
+const siteSettings = Object.assign({}, DEFAULT_CONTACT_SETTINGS, defaultSettingsData, cloudSettings);
 
 // Format Phone Number for WhatsApp API Link
 const cleanedPhone = (siteSettings.contactPhone || '').replace(/\D/g, '');

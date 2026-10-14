@@ -208,4 +208,14 @@ export async function writeCloudDB(key, data) {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {}
+
+  // 4. Git-backed Sync: commit directly to GitHub repository so data lives in source files
+  try {
+    const { commitFileToGitHub } = await import('./githubSync.js');
+    commitFileToGitHub(
+      `database/${key}.json`,
+      JSON.stringify(data, null, 2),
+      `chore: sync database/${key}.json from portal admin`
+    ).catch(() => {});
+  } catch (_) {}
 }

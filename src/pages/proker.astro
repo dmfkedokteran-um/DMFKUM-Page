@@ -1,13 +1,16 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { X, ChevronRight, Plus, Edit, Trash2 } from 'lucide-astro';
-import { MOCK_NEWS } from '../data/mockData.js';
+import { readCloudDB } from "../lib/db.js";
 import defaultNewsData from "../../database/news.json";
 import defaultSettingsData from "../../database/settings.json";
 
-const newsList = defaultNewsData && Array.isArray(defaultNewsData) ? defaultNewsData : [];
-const komisiList: { code: string; title: string }[] = defaultSettingsData?.orgStructure?.komisi || [];
+const { data: newsListRaw } = await readCloudDB('news', defaultNewsData);
+const { data: siteSettingsRaw } = await readCloudDB('settings', defaultSettingsData);
+
+const newsList = Array.isArray(newsListRaw) ? newsListRaw : [];
+const komisiList: { code: string; title: string }[] = siteSettingsRaw?.orgStructure?.komisi || defaultSettingsData?.orgStructure?.komisi || [];
 ---
 
 <Layout title="Karya & Rekam Jejak - DMFK UM" description="Program kerja, rekam jejak, dan publikasi kegiatan terkini dari berbagai komisi DMFK UM.">

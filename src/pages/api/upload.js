@@ -55,6 +55,16 @@ export async function POST({ request }) {
       // Ignore if dist doesn't exist yet
     }
 
+    // Direct Git-backed Sync: commit uploaded file directly into GitHub repository public/uploads
+    try {
+      const { commitFileToGitHub } = await import('../../lib/githubSync.js');
+      commitFileToGitHub(
+        `public/uploads/${filename}`,
+        buffer,
+        `upload: add ${filename} to public/uploads via portal`
+      ).catch(() => {});
+    } catch (_) {}
+
     const fileUrl = `/uploads/${filename}`;
 
     return new Response(JSON.stringify({

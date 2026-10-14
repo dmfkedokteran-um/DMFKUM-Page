@@ -1,7 +1,8 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { Eye, Users, Edit, X, ShieldCheck, Award, UserCheck, Plus, Image } from 'lucide-astro';
+import { readCloudDB } from "../lib/db.js";
 
 // Default Org Structure fallback
 const DEFAULT_ORG_STRUCTURE = {
@@ -96,8 +97,10 @@ const DEFAULT_PROFILE_SETTINGS = {
   orgStructure: DEFAULT_ORG_STRUCTURE
 };
 
-const siteSettings = Object.assign({}, DEFAULT_PROFILE_SETTINGS, defaultSettingsData, {
-  orgStructure: (defaultSettingsData && defaultSettingsData.orgStructure) || DEFAULT_ORG_STRUCTURE
+const { data: cloudSettings } = await readCloudDB('settings', defaultSettingsData);
+
+const siteSettings = Object.assign({}, DEFAULT_PROFILE_SETTINGS, defaultSettingsData, cloudSettings, {
+  orgStructure: (cloudSettings && cloudSettings.orgStructure) || (defaultSettingsData && defaultSettingsData.orgStructure) || DEFAULT_ORG_STRUCTURE
 });
 
 const org = siteSettings.orgStructure;

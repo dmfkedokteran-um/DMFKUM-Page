@@ -1,17 +1,21 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import Layout from "../layouts/Layout.astro";
 import { BookOpen, ArrowRight, ChevronRight, FileText, Download, Edit, X } from "lucide-astro";
-import { MOCK_NEWS, MOCK_DOCS } from "../data/mockData.js";
+import { readCloudDB } from "../lib/db.js";
 import defaultSettingsData from "../../database/settings.json";
 import defaultNewsData from "../../database/news.json";
 import defaultDocsData from "../../database/docs.json";
 
-const siteSettings = defaultSettingsData || {
+const { data: siteSettingsRaw } = await readCloudDB('settings', defaultSettingsData);
+const { data: newsListRaw } = await readCloudDB('news', defaultNewsData);
+const { data: docsListRaw } = await readCloudDB('docs', defaultDocsData);
+
+const siteSettings = siteSettingsRaw || defaultSettingsData || {
   heroImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80"
 };
-const newsList = defaultNewsData && Array.isArray(defaultNewsData) ? defaultNewsData : [];
-const docsList = defaultDocsData && Array.isArray(defaultDocsData) ? defaultDocsData : [];
+const newsList = Array.isArray(newsListRaw) ? newsListRaw : [];
+const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
 ---
 
 <Layout title="DMFK UM - Official Portal">
