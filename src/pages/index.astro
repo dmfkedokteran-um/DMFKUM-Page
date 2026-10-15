@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 import Layout from "../layouts/Layout.astro";
-import { BookOpen, ArrowRight, ChevronRight, FileText, Download, Edit, X } from "lucide-astro";
+import { BookOpen, ArrowRight, ChevronRight, FileText, Download, Edit, X, Newspaper, FolderOpen, Plus, Calendar, Sparkles } from "lucide-astro";
 import { readCloudDB } from "../lib/db.js";
 import defaultSettingsData from "../../database/settings.json";
 import defaultNewsData from "../../database/news.json";
@@ -88,127 +88,203 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
     </section>
 
     {/* Synchronized News Section */}
-    <section class="py-16 px-4 max-w-7xl mx-auto mt-4">
-      <div class="flex justify-between items-end mb-10">
+    <section class="py-12 sm:py-16 px-4 max-w-7xl mx-auto">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-10 gap-4">
         <div>
-          <h2
-            class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 tracking-tight"
-          >
+          <span class="text-rose-600 font-extrabold text-xs uppercase tracking-widest block mb-2">
+            Warta & Kabar Terkini
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
             Kilas Berita Terbaru
           </h2>
-          <p class="text-gray-500 mt-2 font-medium text-lg">
-            Dokumentasi berita dan publikasi program terkini.
+          <p class="text-gray-500 mt-1.5 font-medium text-sm sm:text-base">
+            Dokumentasi liputan kegiatan, advokasi kemahasiswaan, dan publikasi agenda terkini.
           </p>
         </div>
         <a
           href="/proker"
-          class="hidden md:flex text-rose-700 font-bold items-center gap-2 hover:gap-3 bg-rose-50 px-5 py-2.5 rounded-full transition-all duration-300"
+          class="inline-flex text-rose-700 font-bold items-center gap-2 hover:gap-3 bg-rose-50 hover:bg-rose-100/80 px-5 py-2.5 rounded-full transition-all duration-300 text-sm shrink-0 border border-rose-100/60 shadow-sm"
         >
-          Lihat Semua <ArrowRight class="h-4 w-4" />
+          Lihat Semua Berita <ArrowRight class="h-4 w-4" />
         </a>
       </div>
 
       <div
         id="home-news-container"
-        class="grid grid-cols-1 md:grid-cols-3 gap-8"
+        class={newsList.length > 0 ? "grid grid-cols-1 md:grid-cols-3 gap-8" : "w-full"}
         data-initial={JSON.stringify(newsList)}
       >
         {
-          newsList.slice(0, 3).map((news) => (
-            <div class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/50 flex flex-col">
-              <div class="relative overflow-hidden">
-                <img
-                  src={news.image}
-                  alt={news.title}
-                  class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 shadow-sm">
-                  {news.category}
+          newsList.length > 0 ? (
+            newsList.slice(0, 3).map((news) => (
+              <a
+                href="/proker"
+                class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/80 flex flex-col h-full cursor-pointer"
+              >
+                <div class="relative overflow-hidden aspect-[16/10] bg-gray-100 shrink-0">
+                  <img
+                    src={news.image}
+                    alt={news.title}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                  <div class="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 shadow-sm border border-rose-100/50">
+                    {news.category}
+                  </div>
                 </div>
+                <div class="p-6 sm:p-8 flex flex-col flex-1 justify-between">
+                  <div>
+                    <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-2.5">
+                      <Calendar class="h-3.5 w-3.5" />
+                      <span>{news.date}</span>
+                    </div>
+                    <h3 class="font-extrabold text-lg sm:text-xl text-gray-800 mb-2.5 leading-snug line-clamp-2 group-hover:text-rose-700 transition-colors">
+                      {news.title}
+                    </h3>
+                    <p class="text-gray-500 text-sm mb-4 leading-relaxed line-clamp-2">
+                      {news.excerpt}
+                    </p>
+                  </div>
+                  <div class="text-rose-600 font-bold text-sm inline-flex items-center gap-2 group-hover:gap-3 transition-all mt-auto pt-2">
+                    Selengkapnya <ChevronRight class="h-4 w-4" />
+                  </div>
+                </div>
+              </a>
+            ))
+          ) : (
+            <div class="bg-gradient-to-br from-white via-rose-50/20 to-gray-50/50 rounded-[2.5rem] border border-dashed border-rose-200/80 p-8 sm:p-12 text-center shadow-[0_4px_25px_rgb(0,0,0,0.02)] flex flex-col items-center justify-center">
+              <div class="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-rose-600 mb-4 shadow-inner">
+                <Newspaper class="h-8 w-8" />
               </div>
-              <div class="p-8 flex flex-col flex-1">
-                <div class="text-sm font-semibold text-gray-400 mb-3">
-                  {news.date}
-                </div>
-                <h3 class="font-extrabold text-xl text-gray-800 mb-3 leading-snug group-hover:text-rose-700 transition-colors">
-                  {news.title}
-                </h3>
-                <p class="text-gray-500 text-sm mb-6 leading-relaxed line-clamp-2">
-                  {news.excerpt}
-                </p>
+              <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
+                Belum Ada Warta Berita Terpublikasi
+              </h3>
+              <p class="text-gray-500 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed font-normal">
+                Liputan kegiatan komisi, siaran pers, dan program kerja Parlemen Meliora akan dipublikasikan secara berkala di portal ini.
+              </p>
+              <div class="flex flex-wrap items-center justify-center gap-3">
                 <a
                   href="/proker"
-                  class="mt-auto text-rose-600 font-bold text-sm inline-flex items-center gap-2 group-hover:gap-3 transition-all"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-800 hover:text-rose-600 font-bold rounded-xl text-sm border border-gray-200 shadow-sm hover:shadow transition-all"
                 >
-                  Selengkapnya <ChevronRight class="h-4 w-4" />
+                  Buka Portal Berita <ArrowRight class="h-4 w-4 text-rose-600" />
+                </a>
+                <a
+                  href="/proker"
+                  class="admin-only hidden inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 text-white hover:bg-rose-700 font-bold rounded-xl text-sm shadow-md shadow-rose-600/20 transition-all"
+                >
+                  <Plus class="h-4 w-4" /> Tulis Berita Pertama
                 </a>
               </div>
             </div>
-          ))
+          )
         }
       </div>
     </section>
 
     {/* Synchronized Document Section */}
-    <section class="py-8 px-4 max-w-7xl mx-auto">
-      <div class="bg-gradient-to-b from-gray-50 to-rose-50/30 p-8 sm:p-12 rounded-[2.5rem] border border-gray-100 shadow-sm">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+    <section class="py-6 sm:py-10 px-4 max-w-7xl mx-auto">
+      <div class="bg-gradient-to-br from-slate-50/80 via-white to-rose-50/30 p-8 sm:p-12 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] relative overflow-hidden">
+        {/* Subtle decorative glow */}
+        <div class="absolute -top-16 -right-16 w-64 h-64 bg-rose-500/5 rounded-full filter blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-10 gap-4">
           <div>
-            <span class="text-rose-600 font-bold text-xs uppercase tracking-wider block mb-2">Pangkalan Data Resmi</span>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Dokumen & Publikasi Terbaru</h2>
+            <span class="text-rose-600 font-extrabold text-xs uppercase tracking-widest block mb-2">
+              Pangkalan Data Resmi
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+              Dokumen & Publikasi Terbaru
+            </h2>
+            <p class="text-gray-500 mt-1.5 font-medium text-sm sm:text-base">
+              Akses arsip surat keputusan, standar operasional, dan dokumen transparansi lembaga.
+            </p>
           </div>
           <a
             href="/repo"
-            class="text-rose-700 font-bold inline-flex items-center gap-2 hover:gap-3 bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-100 hover:shadow-md transition-all shrink-0"
+            class="inline-flex text-rose-700 font-bold items-center gap-2 hover:gap-3 bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-200/80 hover:shadow-md transition-all text-sm shrink-0"
           >
             Lihat Semua Berkas <ArrowRight class="h-4 w-4" />
           </a>
         </div>
 
-        <div id="home-docs-container" class="space-y-4" data-initial={JSON.stringify(docsList)}>
-          {docsList.slice(0, 3).map(doc => (
-            <div class="bg-white p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow">
-              <div class="flex items-center gap-4">
-                <div class={`p-3.5 rounded-xl shrink-0 ${doc.ext === 'PDF' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'}`}>
-                  <FileText class="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 class="font-bold text-gray-900 text-base">{doc.title}</h4>
-                  <div class="flex items-center gap-3 text-xs text-gray-400 font-medium mt-1">
-                    <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">{doc.category}</span>
-                    <span>{doc.date}</span>
-                    <span>•</span>
-                    <span>{doc.size}</span>
+        <div
+          id="home-docs-container"
+          class={docsList.length > 0 ? "space-y-4 relative z-10" : "w-full relative z-10"}
+          data-initial={JSON.stringify(docsList)}
+        >
+          {
+            docsList.length > 0 ? (
+              docsList.slice(0, 3).map((doc) => (
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md hover:border-gray-200 transition-all">
+                  <div class="flex items-center gap-4">
+                    <div class={`p-3.5 rounded-xl shrink-0 ${doc.ext === 'PDF' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'}`}>
+                      <FileText class="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 class="font-bold text-gray-900 text-base">{doc.title}</h4>
+                      <div class="flex items-center gap-3 text-xs text-gray-400 font-medium mt-1">
+                        <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-semibold">{doc.category}</span>
+                        <span>{doc.date}</span>
+                        <span>•</span>
+                        <span>{doc.size}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <a
+                      href="/repo"
+                      class="flex-1 sm:flex-initial text-center px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-xl text-xs font-bold transition-colors"
+                    >
+                      Buka
+                    </a>
+                    {doc.fileUrl ? (
+                      <a
+                        href={doc.fileUrl}
+                        download={`${doc.title}.${doc.ext ? doc.ext.toLowerCase() : 'pdf'}`}
+                        class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Download class="h-3.5 w-3.5" /> Unduh
+                      </a>
+                    ) : (
+                      <a
+                        href="/repo"
+                        class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Download class="h-3.5 w-3.5" /> Unduh
+                      </a>
+                    )}
                   </div>
                 </div>
-              </div>
-              <div class="flex items-center gap-3">
-                <a
-                  href="/repo"
-                  class="flex-1 sm:flex-initial text-center px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-xl text-xs font-bold transition-colors"
-                >
-                  Buka
-                </a>
-                {doc.fileUrl ? (
-                  <a
-                    href={doc.fileUrl}
-                    download={`${doc.title}.${doc.ext ? doc.ext.toLowerCase() : 'pdf'}`}
-                    class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <Download class="h-3.5 w-3.5" /> Unduh
-                  </a>
-                ) : (
+              ))
+            ) : (
+              <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-dashed border-gray-200/90 p-8 sm:p-12 text-center shadow-sm flex flex-col items-center justify-center">
+                <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100/80 flex items-center justify-center text-blue-600 mb-4 shadow-inner">
+                  <FolderOpen class="h-8 w-8" />
+                </div>
+                <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
+                  Pangkalan Dokumen Sedang Diperbarui
+                </h3>
+                <p class="text-gray-500 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed font-normal">
+                  Arsip regulasi, SOP keorganisasian, SK kepengurusan, dan berkas transparansi akan segera diunggah ke repositori digital.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-3">
                   <a
                     href="/repo"
-                    class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-800 hover:text-rose-600 font-bold rounded-xl text-sm border border-gray-200 hover:bg-white shadow-sm transition-all"
                   >
-                    <Download class="h-3.5 w-3.5" /> Unduh
+                    Buka Repositori Dokumen <ArrowRight class="h-4 w-4 text-rose-600" />
                   </a>
-                )}
+                  <a
+                    href="/repo"
+                    class="admin-only hidden inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 text-white hover:bg-rose-700 font-bold rounded-xl text-sm shadow-md shadow-rose-600/20 transition-all"
+                  >
+                    <Plus class="h-4 w-4" /> Unggah Berkas Pertama
+                  </a>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          }
         </div>
       </div>
     </section>
@@ -279,16 +355,55 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       } catch (e) {}
     }
 
+    function updateAdminVisibility() {
+      const isNowAdmin = localStorage.getItem('isAdmin') === 'true';
+      const adminControls = document.querySelectorAll('.admin-only');
+      adminControls.forEach(el => {
+        if (isNowAdmin) {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+    }
+
     // Helper to render home news
     function renderHomeNews(items: any[]) {
       const container = document.getElementById('home-news-container');
-      if (!container || !Array.isArray(items) || items.length === 0) return;
+      if (!container) return;
+      if (!Array.isArray(items) || items.length === 0) {
+        container.className = "w-full";
+        container.innerHTML = `
+          <div class="bg-gradient-to-br from-white via-rose-50/20 to-gray-50/50 rounded-[2.5rem] border border-dashed border-rose-200/80 p-8 sm:p-12 text-center shadow-[0_4px_25px_rgb(0,0,0,0.02)] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-rose-600 mb-4 shadow-inner">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
+              Belum Ada Warta Berita Terpublikasi
+            </h3>
+            <p class="text-gray-500 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed font-normal">
+              Liputan kegiatan komisi, siaran pers, dan program kerja Parlemen Meliora akan dipublikasikan secara berkala di portal ini.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+              <a href="/proker" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-800 hover:text-rose-600 font-bold rounded-xl text-sm border border-gray-200 shadow-sm hover:shadow transition-all">
+                Buka Portal Berita <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-rose-600"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </a>
+              <a href="/proker" class="admin-only hidden inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 text-white hover:bg-rose-700 font-bold rounded-xl text-sm shadow-md shadow-rose-600/20 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Tulis Berita Pertama
+              </a>
+            </div>
+          </div>
+        `;
+        updateAdminVisibility();
+        return;
+      }
+      container.className = "grid grid-cols-1 md:grid-cols-3 gap-8";
       const top3 = items.slice(0, 3);
       container.innerHTML = top3.map(news => `
-        <a href="/proker" class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100 flex flex-col h-full cursor-pointer">
-          <div class="relative overflow-hidden shrink-0 h-52 bg-gray-100">
+        <a href="/proker" class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/80 flex flex-col h-full cursor-pointer">
+          <div class="relative overflow-hidden shrink-0 aspect-[16/10] bg-gray-100">
             <img src="${news.image}" alt="${news.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 shadow-sm">
+            <div class="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 shadow-sm border border-rose-100/50">
               ${news.category}
             </div>
           </div>
@@ -304,15 +419,43 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
           </div>
         </a>
       `).join('');
+      updateAdminVisibility();
     }
 
     // Helper to render home docs
     function renderHomeDocs(items: any[]) {
       const container = document.getElementById('home-docs-container');
-      if (!container || !Array.isArray(items) || items.length === 0) return;
+      if (!container) return;
+      if (!Array.isArray(items) || items.length === 0) {
+        container.className = "w-full relative z-10";
+        container.innerHTML = `
+          <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-dashed border-gray-200/90 p-8 sm:p-12 text-center shadow-sm flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100/80 flex items-center justify-center text-blue-600 mb-4 shadow-inner">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
+              Pangkalan Dokumen Sedang Diperbarui
+            </h3>
+            <p class="text-gray-500 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed font-normal">
+              Arsip regulasi, SOP keorganisasian, SK kepengurusan, dan berkas transparansi akan segera diunggah ke repositori digital.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+              <a href="/repo" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-800 hover:text-rose-600 font-bold rounded-xl text-sm border border-gray-200 hover:bg-white shadow-sm transition-all">
+                Buka Repositori Dokumen <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-rose-600"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </a>
+              <a href="/repo" class="admin-only hidden inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 text-white hover:bg-rose-700 font-bold rounded-xl text-sm shadow-md shadow-rose-600/20 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Unggah Berkas Pertama
+              </a>
+            </div>
+          </div>
+        `;
+        updateAdminVisibility();
+        return;
+      }
+      container.className = "space-y-4 relative z-10";
       const top3 = items.slice(0, 3);
       container.innerHTML = top3.map(doc => `
-        <div class="bg-white p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow">
           <div class="flex items-center gap-4">
             <div class="p-3.5 rounded-xl shrink-0 ${doc.ext === 'PDF' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'}">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -320,7 +463,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
             <div>
               <h4 class="font-bold text-gray-900 text-base">${doc.title}</h4>
               <div class="flex items-center gap-3 text-xs text-gray-400 font-medium mt-1">
-                <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">${doc.category}</span>
+                <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-semibold">${doc.category}</span>
                 <span>${doc.date}</span>
                 <span>•</span>
                 <span>${doc.size}</span>
@@ -341,6 +484,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
           </div>
         </div>
       `).join('');
+      updateAdminVisibility();
     }
 
     // 1. Sync from localStorage immediately for instant rendering
@@ -348,7 +492,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       const cachedNews = localStorage.getItem('dmfk_news');
       if (cachedNews) {
         const parsed = JSON.parse(cachedNews);
-        if (Array.isArray(parsed) && parsed.length > 0) renderHomeNews(parsed);
+        if (Array.isArray(parsed)) renderHomeNews(parsed);
       }
     } catch (e) {}
 
@@ -356,7 +500,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       const cachedDocs = localStorage.getItem('dmfk_docs');
       if (cachedDocs) {
         const parsed = JSON.parse(cachedDocs);
-        if (Array.isArray(parsed) && parsed.length > 0) renderHomeDocs(parsed);
+        if (Array.isArray(parsed)) renderHomeDocs(parsed);
       }
     } catch (e) {}
 
@@ -364,7 +508,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
     fetch('/api/news')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && Array.isArray(data.news) && data.news.length > 0) {
+        if (data && Array.isArray(data.news)) {
           localStorage.setItem('dmfk_news', JSON.stringify(data.news));
           renderHomeNews(data.news);
         }
@@ -373,21 +517,14 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
     fetch('/api/docs')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && Array.isArray(data.docs) && data.docs.length > 0) {
+        if (data && Array.isArray(data.docs)) {
           localStorage.setItem('dmfk_docs', JSON.stringify(data.docs));
           renderHomeDocs(data.docs);
         }
       }).catch(() => {});
 
-    // Toggle Admin Edit Buttons Visibility
-    const adminControls = document.querySelectorAll('.admin-only');
-    adminControls.forEach(el => {
-      if (isAdmin) {
-        el.classList.remove('hidden');
-      } else {
-        el.classList.add('hidden');
-      }
-    });
+    // Initial check for Admin Edit Buttons Visibility
+    updateAdminVisibility();
 
     // Hero Background Image Edit Modal Logic
     const editHeroBtn = document.getElementById('edit-hero-btn');
