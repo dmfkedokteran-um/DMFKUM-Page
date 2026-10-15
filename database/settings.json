@@ -61,7 +61,7 @@
       {
         "id": "komisi-1",
         "code": "Komisi I",
-        "title": "Advokasi & Aspirasi",
+        "title": "Pemerintahan",
         "themeColor": "rose",
         "ketua": {
           "name": "",
@@ -73,7 +73,7 @@
       {
         "id": "komisi-2",
         "code": "Komisi II",
-        "title": "Legislasi & Regulasi",
+        "title": "Advokasi & Pengawasan",
         "themeColor": "blue",
         "ketua": {
           "name": "",
@@ -85,7 +85,7 @@
       {
         "id": "komisi-3",
         "code": "Komisi III",
-        "title": "Pengawasan & Keuangan",
+        "title": "Internal & Eksternal",
         "themeColor": "emerald",
         "ketua": {
           "name": "",
@@ -97,7 +97,7 @@
       {
         "id": "komisi-4",
         "code": "Komisi IV",
-        "title": "Humas & Informasi",
+        "title": "Publikasi",
         "themeColor": "fuchsia",
         "ketua": {
           "name": "",
