@@ -1,19 +1,37 @@
 ---
 export const prerender = false;
 import Layout from "../layouts/Layout.astro";
-import { BookOpen, ArrowRight, ChevronRight, FileText, Download, Edit, X, Newspaper, FolderOpen, Plus, Calendar, Sparkles } from "lucide-astro";
+import {
+  BookOpen,
+  ArrowRight,
+  ChevronRight,
+  FileText,
+  Download,
+  Edit,
+  X,
+  Newspaper,
+  FolderOpen,
+  Plus,
+  Calendar,
+  Sparkles,
+} from "lucide-astro";
 import { readCloudDB } from "../lib/db.js";
 import defaultSettingsData from "../../database/settings.json";
 import defaultNewsData from "../../database/news.json";
 import defaultDocsData from "../../database/docs.json";
 
-const { data: siteSettingsRaw } = await readCloudDB('settings', defaultSettingsData);
-const { data: newsListRaw } = await readCloudDB('news', defaultNewsData);
-const { data: docsListRaw } = await readCloudDB('docs', defaultDocsData);
+const { data: siteSettingsRaw } = await readCloudDB(
+  "settings",
+  defaultSettingsData,
+);
+const { data: newsListRaw } = await readCloudDB("news", defaultNewsData);
+const { data: docsListRaw } = await readCloudDB("docs", defaultDocsData);
 
-const siteSettings = siteSettingsRaw || defaultSettingsData || {
-  heroImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80"
-};
+const siteSettings = siteSettingsRaw ||
+  defaultSettingsData || {
+    heroImage:
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
+  };
 const newsList = Array.isArray(newsListRaw) ? newsListRaw : [];
 const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
 ---
@@ -34,8 +52,8 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       </div>
 
       {/* Admin Edit Hero Button */}
-      <button 
-        id="edit-hero-btn" 
+      <button
+        id="edit-hero-btn"
         class="admin-only hidden absolute top-6 right-6 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md text-gray-900 px-4 py-2.5 rounded-full font-bold text-xs hover:bg-white hover:scale-105 transition-all shadow-lg cursor-pointer outline-none"
       >
         <Edit class="h-4 w-4 text-rose-600" /> Edit Gambar Header
@@ -65,8 +83,8 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
         <p
           class="text-lg md:text-xl text-rose-100/90 mb-8 max-w-2xl mx-auto font-light"
         >
-          Jelajahi portal kami. Temukan pembaruan warta berita, program
-          kerja, dan akses dokumen publik secara instan.
+          Jelajahi portal kami. Temukan pembaruan berita, program kerja, dan
+          akses dokumen publik secara instan.
         </p>
         <div class="flex flex-col sm:flex-row justify-center gap-4">
           <a
@@ -89,16 +107,22 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
 
     {/* Synchronized News Section */}
     <section class="py-12 sm:py-16 px-4 max-w-7xl mx-auto">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-10 gap-4">
+      <div
+        class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-10 gap-4"
+      >
         <div>
-          <span class="text-rose-600 font-extrabold text-xs uppercase tracking-widest block mb-2">
-            Warta & Kabar Terkini
+          <span
+            class="text-rose-600 font-extrabold text-xs uppercase tracking-widest block mb-2"
+          >
+            Berita & Kabar Terkini
           </span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+          <h2
+            class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight"
+          >
             Kilas Berita Terbaru
           </h2>
           <p class="text-gray-500 mt-1.5 font-medium text-sm sm:text-base">
-            Dokumentasi liputan kegiatan, advokasi kemahasiswaan, dan publikasi agenda terkini.
+            Dokumentasi program kerja dan agenda terkini.
           </p>
         </div>
         <a
@@ -111,7 +135,9 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
 
       <div
         id="home-news-container"
-        class={newsList.length > 0 ? "grid grid-cols-1 md:grid-cols-3 gap-8" : "w-full"}
+        class={newsList.length > 0
+          ? "grid grid-cols-1 md:grid-cols-3 gap-8"
+          : "w-full"}
         data-initial={JSON.stringify(newsList)}
       >
         {
@@ -157,17 +183,19 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
                 <Newspaper class="h-8 w-8" />
               </div>
               <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
-                Belum Ada Warta Berita Terpublikasi
+                Belum Ada Berita Terpublikasi
               </h3>
               <p class="text-gray-500 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed font-normal">
-                Liputan kegiatan komisi, siaran pers, dan program kerja Parlemen Meliora akan dipublikasikan secara berkala di portal ini.
+                Liputan kegiatan komisi, siaran pers, dan program kerja Parlemen
+                Meliora akan dipublikasikan secara berkala di portal ini.
               </p>
               <div class="flex flex-wrap items-center justify-center gap-3">
                 <a
                   href="/proker"
                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-800 hover:text-rose-600 font-bold rounded-xl text-sm border border-gray-200 shadow-sm hover:shadow transition-all"
                 >
-                  Buka Portal Berita <ArrowRight class="h-4 w-4 text-rose-600" />
+                  Buka Portal Berita{" "}
+                  <ArrowRight class="h-4 w-4 text-rose-600" />
                 </a>
                 <a
                   href="/proker"
@@ -184,20 +212,32 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
 
     {/* Synchronized Document Section */}
     <section class="py-6 sm:py-10 px-4 max-w-7xl mx-auto">
-      <div class="bg-gradient-to-br from-slate-50/80 via-white to-rose-50/30 p-8 sm:p-12 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] relative overflow-hidden">
+      <div
+        class="bg-gradient-to-br from-slate-50/80 via-white to-rose-50/30 p-8 sm:p-12 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] relative overflow-hidden"
+      >
         {/* Subtle decorative glow */}
-        <div class="absolute -top-16 -right-16 w-64 h-64 bg-rose-500/5 rounded-full filter blur-3xl pointer-events-none"></div>
+        <div
+          class="absolute -top-16 -right-16 w-64 h-64 bg-rose-500/5 rounded-full filter blur-3xl pointer-events-none"
+        >
+        </div>
 
-        <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-10 gap-4">
+        <div
+          class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-10 gap-4"
+        >
           <div>
-            <span class="text-rose-600 font-extrabold text-xs uppercase tracking-widest block mb-2">
+            <span
+              class="text-rose-600 font-extrabold text-xs uppercase tracking-widest block mb-2"
+            >
               Pangkalan Data Resmi
             </span>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+            <h2
+              class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight"
+            >
               Dokumen & Publikasi Terbaru
             </h2>
             <p class="text-gray-500 mt-1.5 font-medium text-sm sm:text-base">
-              Akses arsip surat keputusan, standar operasional, dan dokumen transparansi lembaga.
+              Akses arsip surat keputusan, standar operasional, dan dokumen
+              transparansi lembaga.
             </p>
           </div>
           <a
@@ -210,7 +250,9 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
 
         <div
           id="home-docs-container"
-          class={docsList.length > 0 ? "space-y-4 relative z-10" : "w-full relative z-10"}
+          class={docsList.length > 0
+            ? "space-y-4 relative z-10"
+            : "w-full relative z-10"}
           data-initial={JSON.stringify(docsList)}
         >
           {
@@ -218,13 +260,19 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
               docsList.slice(0, 3).map((doc) => (
                 <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md hover:border-gray-200 transition-all">
                   <div class="flex items-center gap-4">
-                    <div class={`p-3.5 rounded-xl shrink-0 ${doc.ext === 'PDF' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'}`}>
+                    <div
+                      class={`p-3.5 rounded-xl shrink-0 ${doc.ext === "PDF" ? "bg-rose-50 text-rose-600" : "bg-blue-50 text-blue-600"}`}
+                    >
                       <FileText class="h-6 w-6" />
                     </div>
                     <div>
-                      <h4 class="font-bold text-gray-900 text-base">{doc.title}</h4>
+                      <h4 class="font-bold text-gray-900 text-base">
+                        {doc.title}
+                      </h4>
                       <div class="flex items-center gap-3 text-xs text-gray-400 font-medium mt-1">
-                        <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-semibold">{doc.category}</span>
+                        <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-semibold">
+                          {doc.category}
+                        </span>
                         <span>{doc.date}</span>
                         <span>•</span>
                         <span>{doc.size}</span>
@@ -241,7 +289,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
                     {doc.fileUrl ? (
                       <a
                         href={doc.fileUrl}
-                        download={`${doc.title}.${doc.ext ? doc.ext.toLowerCase() : 'pdf'}`}
+                        download={`${doc.title}.${doc.ext ? doc.ext.toLowerCase() : "pdf"}`}
                         class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5"
                       >
                         <Download class="h-3.5 w-3.5" /> Unduh
@@ -266,14 +314,17 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
                   Pangkalan Dokumen Sedang Diperbarui
                 </h3>
                 <p class="text-gray-500 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed font-normal">
-                  Arsip regulasi, SOP keorganisasian, SK kepengurusan, dan berkas transparansi akan segera diunggah ke repositori digital.
+                  Arsip regulasi, SOP keorganisasian, SK kepengurusan, dan
+                  berkas transparansi akan segera diunggah ke repositori
+                  digital.
                 </p>
                 <div class="flex flex-wrap items-center justify-center gap-3">
                   <a
                     href="/repo"
                     class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-800 hover:text-rose-600 font-bold rounded-xl text-sm border border-gray-200 hover:bg-white shadow-sm transition-all"
                   >
-                    Buka Repositori Dokumen <ArrowRight class="h-4 w-4 text-rose-600" />
+                    Buka Repositori Dokumen{" "}
+                    <ArrowRight class="h-4 w-4 text-rose-600" />
                   </a>
                   <a
                     href="/repo"
@@ -290,86 +341,105 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
     </section>
 
     {/* Admin Modal Form Edit Hero Background Image */}
-    <dialog 
-      id="hero-modal" 
+    <dialog
+      id="hero-modal"
       closedby="any"
       class="fixed inset-0 bg-transparent p-4 border-none outline-none open:flex justify-center items-center backdrop:bg-gray-900/80 backdrop:backdrop-blur-sm"
     >
-      <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
+      <div
+        class="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto"
+      >
         <div class="flex justify-between items-center mb-6">
           <div>
-            <h2 class="text-2xl font-extrabold text-gray-900">Edit Background Header</h2>
-            <p class="text-sm font-medium text-gray-500 mt-1">Unggah gambar baru dari komputer atau masukkan URL gambar.</p>
+            <h2 class="text-2xl font-extrabold text-gray-900">
+              Edit Background Header
+            </h2>
+            <p class="text-sm font-medium text-gray-500 mt-1">
+              Unggah gambar baru dari komputer atau masukkan URL gambar.
+            </p>
           </div>
-          <button id="close-hero-modal-btn" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none">
+          <button
+            id="close-hero-modal-btn"
+            class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors cursor-pointer outline-none"
+          >
             <X class="h-5 w-5" />
           </button>
         </div>
 
         <form id="hero-form" class="space-y-5">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Upload Gambar Komputer</label>
-            <input 
-              type="file" 
-              id="hero-file-input" 
+            <label class="block text-sm font-bold text-gray-700 mb-2"
+              >Upload Gambar Komputer</label
+            >
+            <input
+              type="file"
+              id="hero-file-input"
               accept="image/*"
               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
             />
-            <p class="text-xs text-gray-400 mt-1">File akan diunggah dan disimpan langsung ke folder server <code>public/uploads/</code>.</p>
+            <p class="text-xs text-gray-400 mt-1">
+              File akan diunggah dan disimpan langsung ke folder server <code
+                >public/uploads/</code
+              >.
+            </p>
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Atau Masukkan URL Gambar Online</label>
-            <input 
-              type="text" 
+            <label class="block text-sm font-bold text-gray-700 mb-2"
+              >Atau Masukkan URL Gambar Online</label
+            >
+            <input
+              type="text"
               id="hero-url-input"
               value={siteSettings.heroImage}
-              placeholder="https://..." 
+              placeholder="https://..."
               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none transition-all font-medium text-gray-800"
             />
           </div>
-          
-          <button type="submit" class="w-full mt-4 py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-base cursor-pointer">
+
+          <button
+            type="submit"
+            class="w-full mt-4 py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all text-base cursor-pointer"
+          >
             Simpan Gambar Header Baru
           </button>
         </form>
       </div>
     </dialog>
-
   </div>
 </Layout>
 
 <script>
   function setupHomePageAdmin() {
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
 
     // ✅ Apply localStorage settings overrides on page load
-    const cachedSettings = localStorage.getItem('dmfk_settings');
+    const cachedSettings = localStorage.getItem("dmfk_settings");
     if (cachedSettings) {
       try {
         const s = JSON.parse(cachedSettings);
         if (s.heroImage) {
-          const heroBg = document.getElementById('hero-bg-overlay');
+          const heroBg = document.getElementById("hero-bg-overlay");
           if (heroBg) heroBg.style.backgroundImage = `url('${s.heroImage}')`;
         }
       } catch (e) {}
     }
 
     function updateAdminVisibility() {
-      const isNowAdmin = localStorage.getItem('isAdmin') === 'true';
-      const adminControls = document.querySelectorAll('.admin-only');
-      adminControls.forEach(el => {
+      const isNowAdmin = localStorage.getItem("isAdmin") === "true";
+      const adminControls = document.querySelectorAll(".admin-only");
+      adminControls.forEach((el) => {
         if (isNowAdmin) {
-          el.classList.remove('hidden');
+          el.classList.remove("hidden");
         } else {
-          el.classList.add('hidden');
+          el.classList.add("hidden");
         }
       });
     }
 
     // Helper to render home news
     function renderHomeNews(items: any[]) {
-      const container = document.getElementById('home-news-container');
+      const container = document.getElementById("home-news-container");
       if (!container) return;
       if (!Array.isArray(items) || items.length === 0) {
         container.className = "w-full";
@@ -379,7 +449,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
             </div>
             <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
-              Belum Ada Warta Berita Terpublikasi
+              Belum Ada Berita Terpublikasi
             </h3>
             <p class="text-gray-500 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed font-normal">
               Liputan kegiatan komisi, siaran pers, dan program kerja Parlemen Meliora akan dipublikasikan secara berkala di portal ini.
@@ -399,7 +469,9 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       }
       container.className = "grid grid-cols-1 md:grid-cols-3 gap-8";
       const top3 = items.slice(0, 3);
-      container.innerHTML = top3.map(news => `
+      container.innerHTML = top3
+        .map(
+          (news) => `
         <a href="/proker" class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/80 flex flex-col h-full cursor-pointer">
           <div class="relative overflow-hidden shrink-0 aspect-[16/10] bg-gray-100">
             <img src="${news.image}" alt="${news.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
@@ -411,20 +483,22 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
             <div>
               <div class="text-xs font-medium text-gray-400 mb-2">${news.date}</div>
               <h3 class="font-extrabold text-lg sm:text-xl text-gray-800 mb-2 leading-snug line-clamp-2 group-hover:text-rose-700 transition-colors">${news.title}</h3>
-              <p class="text-gray-500 text-sm mb-4 leading-relaxed line-clamp-2">${news.excerpt || ''}</p>
+              <p class="text-gray-500 text-sm mb-4 leading-relaxed line-clamp-2">${news.excerpt || ""}</p>
             </div>
             <div class="text-rose-600 font-bold text-sm inline-flex items-center gap-2 group-hover:gap-3 transition-all mt-2">
               Selengkapnya <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
         </a>
-      `).join('');
+      `,
+        )
+        .join("");
       updateAdminVisibility();
     }
 
     // Helper to render home docs
     function renderHomeDocs(items: any[]) {
-      const container = document.getElementById('home-docs-container');
+      const container = document.getElementById("home-docs-container");
       if (!container) return;
       if (!Array.isArray(items) || items.length === 0) {
         container.className = "w-full relative z-10";
@@ -454,10 +528,12 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       }
       container.className = "space-y-4 relative z-10";
       const top3 = items.slice(0, 3);
-      container.innerHTML = top3.map(doc => `
+      container.innerHTML = top3
+        .map(
+          (doc) => `
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow">
           <div class="flex items-center gap-4">
-            <div class="p-3.5 rounded-xl shrink-0 ${doc.ext === 'PDF' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'}">
+            <div class="p-3.5 rounded-xl shrink-0 ${doc.ext === "PDF" ? "bg-rose-50 text-rose-600" : "bg-blue-50 text-blue-600"}">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
             <div>
@@ -472,24 +548,30 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
           </div>
           <div class="flex items-center gap-3">
             <a href="/repo" class="flex-1 sm:flex-initial text-center px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-xl text-xs font-bold transition-colors">Buka</a>
-            ${doc.fileUrl ? `
-              <a href="${doc.fileUrl}" download="${doc.title}.${doc.ext ? doc.ext.toLowerCase() : 'pdf'}" class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5">
+            ${
+              doc.fileUrl
+                ? `
+              <a href="${doc.fileUrl}" download="${doc.title}.${doc.ext ? doc.ext.toLowerCase() : "pdf"}" class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y3="3"/></svg> Unduh
               </a>
-            ` : `
+            `
+                : `
               <a href="/repo" class="flex-1 sm:flex-initial text-center px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-xs font-bold shadow-sm shadow-rose-600/20 transition-all flex items-center justify-center gap-1.5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y3="3"/></svg> Unduh
               </a>
-            `}
+            `
+            }
           </div>
         </div>
-      `).join('');
+      `,
+        )
+        .join("");
       updateAdminVisibility();
     }
 
     // 1. Sync from localStorage immediately for instant rendering
     try {
-      const cachedNews = localStorage.getItem('dmfk_news');
+      const cachedNews = localStorage.getItem("dmfk_news");
       if (cachedNews) {
         const parsed = JSON.parse(cachedNews);
         if (Array.isArray(parsed)) renderHomeNews(parsed);
@@ -497,7 +579,7 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
     } catch (e) {}
 
     try {
-      const cachedDocs = localStorage.getItem('dmfk_docs');
+      const cachedDocs = localStorage.getItem("dmfk_docs");
       if (cachedDocs) {
         const parsed = JSON.parse(cachedDocs);
         if (Array.isArray(parsed)) renderHomeDocs(parsed);
@@ -505,59 +587,74 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
     } catch (e) {}
 
     // 2. Fetch latest from Server API to maintain 100% sync
-    fetch('/api/news')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
+    fetch("/api/news")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data && Array.isArray(data.news)) {
-          localStorage.setItem('dmfk_news', JSON.stringify(data.news));
+          localStorage.setItem("dmfk_news", JSON.stringify(data.news));
           renderHomeNews(data.news);
         }
-      }).catch(() => {});
+      })
+      .catch(() => {});
 
-    fetch('/api/docs')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
+    fetch("/api/docs")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data && Array.isArray(data.docs)) {
-          localStorage.setItem('dmfk_docs', JSON.stringify(data.docs));
+          localStorage.setItem("dmfk_docs", JSON.stringify(data.docs));
           renderHomeDocs(data.docs);
         }
-      }).catch(() => {});
+      })
+      .catch(() => {});
 
     // Initial check for Admin Edit Buttons Visibility
     updateAdminVisibility();
 
     // Hero Background Image Edit Modal Logic
-    const editHeroBtn = document.getElementById('edit-hero-btn');
-    const heroModal = document.getElementById('hero-modal') as HTMLDialogElement | null;
-    const closeHeroModalBtn = document.getElementById('close-hero-modal-btn');
-    const heroForm = document.getElementById('hero-form') as HTMLFormElement | null;
-    const heroFileInput = document.getElementById('hero-file-input') as HTMLInputElement | null;
-    const heroUrlInput = document.getElementById('hero-url-input') as HTMLInputElement | null;
+    const editHeroBtn = document.getElementById("edit-hero-btn");
+    const heroModal = document.getElementById(
+      "hero-modal",
+    ) as HTMLDialogElement | null;
+    const closeHeroModalBtn = document.getElementById("close-hero-modal-btn");
+    const heroForm = document.getElementById(
+      "hero-form",
+    ) as HTMLFormElement | null;
+    const heroFileInput = document.getElementById(
+      "hero-file-input",
+    ) as HTMLInputElement | null;
+    const heroUrlInput = document.getElementById(
+      "hero-url-input",
+    ) as HTMLInputElement | null;
 
     if (editHeroBtn && heroModal) {
-      editHeroBtn.addEventListener('click', () => {
+      editHeroBtn.addEventListener("click", () => {
         heroModal.showModal();
       });
     }
 
     if (closeHeroModalBtn && heroModal) {
-      closeHeroModalBtn.addEventListener('click', () => {
+      closeHeroModalBtn.addEventListener("click", () => {
         heroModal.close();
       });
     }
 
     function convertDriveUrl(url: string): string {
-      if (!url) return '';
+      if (!url) return "";
       const trimmed = url.trim();
-      const fileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-      if (fileMatch) return `https://lh3.googleusercontent.com/d/${fileMatch[1]}`;
-      const idMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+      const fileMatch = trimmed.match(
+        /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+      );
+      if (fileMatch)
+        return `https://lh3.googleusercontent.com/d/${fileMatch[1]}`;
+      const idMatch = trimmed.match(
+        /drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/,
+      );
       if (idMatch) return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
       return trimmed;
     }
 
     if (heroUrlInput) {
-      heroUrlInput.addEventListener('blur', () => {
+      heroUrlInput.addEventListener("blur", () => {
         const converted = convertDriveUrl(heroUrlInput.value);
         if (converted !== heroUrlInput.value.trim()) {
           heroUrlInput.value = converted;
@@ -566,10 +663,10 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
     }
 
     if (heroForm && heroModal) {
-      heroForm.addEventListener('submit', async (e) => {
+      heroForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        
-        let newHeroImageUrl = convertDriveUrl(heroUrlInput?.value || '');
+
+        let newHeroImageUrl = convertDriveUrl(heroUrlInput?.value || "");
 
         // Convert file to base64 DataURL (works on Vercel static hosting)
         const file = heroFileInput?.files?.[0];
@@ -583,21 +680,23 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
         }
 
         if (!newHeroImageUrl) {
-          alert('Silakan pilih file gambar atau masukkan URL gambar.');
+          alert("Silakan pilih file gambar atau masukkan URL gambar.");
           return;
         }
 
         // Try server save, always persist to localStorage as fallback
         try {
-          await fetch('/api/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ heroImage: newHeroImageUrl })
+          await fetch("/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ heroImage: newHeroImageUrl }),
           }).catch(() => {});
         } catch (_) {}
-        const cachedSettings = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
+        const cachedSettings = JSON.parse(
+          localStorage.getItem("dmfk_settings") || "{}",
+        );
         cachedSettings.heroImage = newHeroImageUrl;
-        localStorage.setItem('dmfk_settings', JSON.stringify(cachedSettings));
+        localStorage.setItem("dmfk_settings", JSON.stringify(cachedSettings));
         heroModal.close();
         window.location.reload();
       });
@@ -605,6 +704,6 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
   }
 
   setupHomePageAdmin();
-  document.addEventListener('astro:after-swap', setupHomePageAdmin);
-  document.addEventListener('astro:page-load', setupHomePageAdmin);
+  document.addEventListener("astro:after-swap", setupHomePageAdmin);
+  document.addEventListener("astro:page-load", setupHomePageAdmin);
 </script>
