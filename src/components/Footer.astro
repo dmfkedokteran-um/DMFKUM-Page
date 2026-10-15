@@ -1,5 +1,6 @@
 ---
 import { Building } from "lucide-astro";
+const currentYear = new Date().getFullYear();
 ---
 
 <footer
@@ -36,7 +37,17 @@ import { Building } from "lucide-astro";
     </p>
     <div class="w-16 h-1 bg-gray-800 rounded-full mx-auto mb-6"></div>
     <p class="text-sm font-bold tracking-wider uppercase text-gray-600">
-      © 2026 DMF Kedokteran UM. All rights reserved.
+      © <span id="footer-year">{currentYear}</span> DMF Kedokteran UM. All rights reserved.
     </p>
   </div>
 </footer>
+
+<script>
+  function updateFooterYear() {
+    const el = document.getElementById("footer-year");
+    if (el) el.textContent = new Date().getFullYear().toString();
+  }
+  updateFooterYear();
+  document.addEventListener("astro:after-swap", updateFooterYear);
+  document.addEventListener("astro:page-load", updateFooterYear);
+</script>
