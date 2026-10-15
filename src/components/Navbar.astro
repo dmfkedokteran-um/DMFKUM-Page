@@ -259,14 +259,43 @@ const navItems = [
       });
     }
 
-    // Admin Auth State Setup - Reset to locked by default on every page refresh / load
-    if (sessionStorage.getItem("justLoggedIn") === "true") {
-      sessionStorage.removeItem("justLoggedIn");
-      localStorage.setItem("isAdmin", "true");
-    } else {
-      localStorage.setItem("isAdmin", "false");
+    // Admin Session Management (30-minute inactivity auto-logout)
+    const SESSION_DURATION_MS = 30 * 60 * 1000;
+
+    function checkAdminSession(): boolean {
+      const stored = localStorage.getItem("isAdmin") === "true";
+      const expiryStr = localStorage.getItem("adminSessionExpiry");
+      
+      if (!stored || !expiryStr) {
+        localStorage.setItem("isAdmin", "false");
+        localStorage.removeItem("adminSessionExpiry");
+        return false;
+      }
+      
+      const expiry = parseInt(expiryStr, 10);
+      if (isNaN(expiry) || Date.now() > expiry) {
+        localStorage.setItem("isAdmin", "false");
+        localStorage.removeItem("adminSessionExpiry");
+        return false;
+      }
+      
+      // Sesi aktif & diperpanjang secara otomatis
+      localStorage.setItem("adminSessionExpiry", (Date.now() + SESSION_DURATION_MS).toString());
+      return true;
     }
-    const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+    const isAdmin = checkAdminSession();
+
+    // Perpanjang timer sesi setiap ada aktivitas pengguna (klik / ketik / scroll)
+    if (isAdmin) {
+      const extendActiveSession = () => {
+        if (localStorage.getItem("isAdmin") === "true") {
+          localStorage.setItem("adminSessionExpiry", (Date.now() + SESSION_DURATION_MS).toString());
+        }
+      };
+      window.addEventListener("click", extendActiveSession, { passive: true });
+      window.addEventListener("keydown", extendActiveSession, { passive: true });
+    }
 
     // Toggle Admin button on Desktop and Mobile Header
     const adminToggleBtn = document.getElementById("admin-toggle-btn");
@@ -351,10 +380,11 @@ const navItems = [
 
     // Toggle Actions
     const handleAdminClick = () => {
-      const currentIsAdmin = localStorage.getItem("isAdmin") === "true";
+      const currentIsAdmin = checkAdminSession();
       if (currentIsAdmin) {
         if (confirm("Apakah Anda yakin ingin keluar dari Mode Admin?")) {
           localStorage.setItem("isAdmin", "false");
+          localStorage.removeItem("adminSessionExpiry");
           window.location.reload();
         }
       } else {
@@ -424,6 +454,7 @@ const navItems = [
           if (uVal === "admin" && (pVal === expectedPassword || pVal === "admin123")) {
             sessionStorage.setItem("justLoggedIn", "true");
             localStorage.setItem("isAdmin", "true");
+            localStorage.setItem("adminSessionExpiry", (Date.now() + 30 * 60 * 1000).toString());
             loginModal.close();
             window.location.reload();
           } else {

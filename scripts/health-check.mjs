@@ -137,12 +137,12 @@ check('Download Engine', 'Cross-Device Download Handler in repo.astro (Blob URL,
   return true;
 });
 
-// 5. SECURITY & ADMIN LOCK AUDIT
-console.log('\n\x1b[33m--- [5/8] SECURITY & ADMIN LOCK AUDIT ---\x1b[0m');
-check('Security', 'Navbar.astro enforces auto-lock on page refresh/reload by default', () => {
+// 5. SECURITY & ADMIN SESSION AUDIT
+console.log('\n\x1b[33m--- [5/8] SECURITY & ADMIN SESSION AUDIT ---\x1b[0m');
+check('Security', 'Navbar.astro enforces inactivity session timeout (auto-lock after inactivity)', () => {
   const navContent = fs.readFileSync(path.join(rootDir, 'src/components/Navbar.astro'), 'utf8');
-  if (!navContent.includes('sessionStorage.getItem("justLoggedIn")') || !navContent.includes('localStorage.setItem("isAdmin", "false")')) {
-    return 'Navbar.astro does not enforce auto-lock on refresh!';
+  if (!navContent.includes('adminSessionExpiry') || !navContent.includes('checkAdminSession')) {
+    return 'Navbar.astro does not enforce inactivity session timeout!';
   }
   return true;
 });
