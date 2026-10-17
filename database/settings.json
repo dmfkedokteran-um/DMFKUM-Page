@@ -1,111 +1,107 @@
 {
-  "heroImage": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
-  "orgBgImage": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
-  "parliamentName": "Parlemen Meliora 2026",
-  "parliamentLogo": "",
-  "orgTitle": "Struktur Kepengurusan 2026",
-  "orgSubtitle": "Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM",
-  "heroTitle": "Membangun Sinergi,\nMenginspirasi Negeri.",
-  "heroSubtitle": "Jelajahi portal resmi DMFK UM. Temukan pembaruan berita, program kerja, dan akses dokumen publik secara instan.",
-  "aboutTag": "Tentang Kami",
-  "aboutTitle": "Identitas & Tujuan",
   "aboutDesc": "Visi, misi, dan susunan kepengurusan organisasi DMFK UM 2026.",
-  "visi": "Menjadikan Dewan Mahasiswa Fakultas Kedokteran Universitas Negeri Malang sebagai lembaga legislatif yang solutif, proaktif, transparan, dan berintegritas dalam menampung aspirasi serta mengawal pergerakan mahasiswa.",
+  "aboutTag": "DEWAN MAHASISWA FAKULTAS KEDOKTERAN",
+  "aboutTitle": "PARLEMEN MELIORA",
+  "contactAddress": "Gedung Sekretariat Bersama Ormawa FK Lt. 2, Universitas Negeri Malang, Jl. Semarang 5, Malang",
+  "contactEmail": "dmfk.um@gmail.com",
+  "contactInstagram": "@dmfk_um",
+  "contactLinktree": "https://linktr.ee/dmfkum",
+  "contactPhone": "081234567890",
+  "heroImage": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
+  "heroSubtitle": "Jelajahi portal resmi DMFK UM. Temukan pembaruan berita, program kerja, dan akses dokumen publik secara instan.",
+  "heroTitle": "Membangun Sinergi,\nMenginspirasi Negeri.",
   "misi": [
     "Menyelenggarakan tata kelola kelembagaan yang transparan, akuntabel, dan berorientasi pada pelayanan mahasiswa.",
     "Mengoptimalkan fungsi pengawasan dan legislasi dalam setiap program kerja keorganisasian.",
     "Membangun saluran advokasi aspirasi yang responsif, inklusif, dan solutif bagi seluruh mahasiswa FK UM.",
     "Mempererat kolaborasi sinergis antar lembaga kemahasiswaan di lingkungan Fakultas Kedokteran UM."
   ],
-  "contactEmail": "dmfk.um@gmail.com",
-  "contactPhone": "081234567890",
-  "contactInstagram": "@dmfk_um",
-  "contactLinktree": "https://linktr.ee/dmfkum",
-  "contactAddress": "Gedung Sekretariat Bersama Ormawa FK Lt. 2, Universitas Negeri Malang, Jl. Semarang 5, Malang",
+  "orgBgImage": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80",
   "orgStructure": {
+    "komisi": [
+      {
+        "code": "Komisi I",
+        "id": "komisi-1",
+        "ketua": {
+          "avatar": "",
+          "dept": "",
+          "name": ""
+        },
+        "themeColor": "rose",
+        "title": "Pemerintahan"
+      },
+      {
+        "code": "Komisi II",
+        "id": "komisi-2",
+        "ketua": {
+          "avatar": "",
+          "dept": "",
+          "name": ""
+        },
+        "themeColor": "blue",
+        "title": "Advokasi & Pengawasan"
+      },
+      {
+        "code": "Komisi III",
+        "id": "komisi-3",
+        "ketua": {
+          "avatar": "",
+          "dept": "",
+          "name": ""
+        },
+        "themeColor": "emerald",
+        "title": "Internal & Eksternal"
+      },
+      {
+        "code": "Komisi IV",
+        "id": "komisi-4",
+        "ketua": {
+          "avatar": "",
+          "dept": "",
+          "name": ""
+        },
+        "themeColor": "fuchsia",
+        "title": "Publikasi"
+      }
+    ],
     "pembina": {
-      "title": "Pembina Organisasi",
+      "avatar": "",
       "name": "",
       "nip": "",
-      "avatar": ""
+      "title": "Pembina Organisasi"
     },
     "presidium": [
       {
-        "role": "Ketua Umum",
-        "name": "",
+        "avatar": "",
         "dept": "",
-        "avatar": ""
+        "name": "",
+        "role": "Ketua Umum"
       },
       {
-        "role": "Wakil Ketua",
-        "name": "",
+        "avatar": "",
         "dept": "",
-        "avatar": ""
+        "name": "",
+        "role": "Wakil Ketua"
       }
     ],
     "sekben": [
       {
-        "role": "Sekretaris Umum",
-        "name": "",
+        "avatar": "",
         "dept": "",
-        "avatar": ""
-      },
-      {
-        "role": "Bendahara Umum",
         "name": "",
+        "role": "Sekretaris Umum"
+      },
+      {
+        "avatar": "",
         "dept": "",
-        "avatar": ""
-      }
-    ],
-    "komisi": [
-      {
-        "id": "komisi-1",
-        "code": "Komisi I",
-        "title": "Pemerintahan",
-        "themeColor": "rose",
-        "ketua": {
-          "name": "",
-          "dept": "",
-          "avatar": ""
-        },
-        "anggota": []
-      },
-      {
-        "id": "komisi-2",
-        "code": "Komisi II",
-        "title": "Advokasi & Pengawasan",
-        "themeColor": "blue",
-        "ketua": {
-          "name": "",
-          "dept": "",
-          "avatar": ""
-        },
-        "anggota": []
-      },
-      {
-        "id": "komisi-3",
-        "code": "Komisi III",
-        "title": "Internal & Eksternal",
-        "themeColor": "emerald",
-        "ketua": {
-          "name": "",
-          "dept": "",
-          "avatar": ""
-        },
-        "anggota": []
-      },
-      {
-        "id": "komisi-4",
-        "code": "Komisi IV",
-        "title": "Publikasi",
-        "themeColor": "fuchsia",
-        "ketua": {
-          "name": "",
-          "dept": "",
-          "avatar": ""
-        },
-        "anggota": []
+        "name": "",
+        "role": "Bendahara Umum"
       }
     ]
-  }
+  },
+  "orgSubtitle": "Pimpinan Utama, BPH, dan Komisi Operasional Organisasi DMFK UM",
+  "orgTitle": "Struktur Kepengurusan 2026",
+  "parliamentLogo": "",
+  "parliamentName": "Parlemen Meliora 2026",
+  "visi": "Menjadikan Dewan Mahasiswa Fakultas Kedokteran Universitas Negeri Malang sebagai lembaga legislatif yang solutif, proaktif, transparan, dan berintegritas dalam menampung aspirasi serta mengawal pergerakan mahasiswa."
 }
