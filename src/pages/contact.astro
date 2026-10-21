@@ -249,14 +249,23 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
     fetch('/api/settings')
       .then(res => res.ok ? res.json() : null)
       .then(resData => {
-        if (resData && resData.isCloud && resData.settings && typeof resData.settings === 'object') {
+        if (resData && resData.settings && typeof resData.settings === 'object') {
           const serverSettings = resData.settings;
           const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
-          const merged = { ...current, ...serverSettings };
+          const localTime = Number(current._updatedAt) || 0;
+          const serverTime = Number(serverSettings._updatedAt) || 0;
+          let merged;
+          if (resData.isCloud) {
+            merged = serverTime >= localTime ? { ...current, ...serverSettings } : { ...serverSettings, ...current };
+          } else {
+            merged = (localTime > 0 && localTime >= serverTime) ? { ...serverSettings, ...current } : { ...current, ...serverSettings };
+          }
           const currentStr = localStorage.getItem('dmfk_settings');
           const mergedStr = JSON.stringify(merged);
           if (mergedStr !== currentStr) {
-            localStorage.setItem('dmfk_settings', mergedStr);
+            try {
+              localStorage.setItem('dmfk_settings', mergedStr);
+            } catch (_) {}
             if (merged.contactEmail) {
               const el = document.getElementById('contact-email-text');
               if (el) { el.textContent = merged.contactEmail; (el as HTMLAnchorElement).href = `mailto:${merged.contactEmail}`; }
@@ -326,12 +335,14 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
         const linktreeVal = (document.getElementById('linktree-input') as HTMLInputElement).value.trim();
         const addressVal = (document.getElementById('address-input') as HTMLTextAreaElement).value.trim();
 
+        const now = Date.now();
         const contactPayload = {
           contactEmail: emailVal,
           contactPhone: phoneVal,
           contactInstagram: instagramVal,
           contactLinktree: linktreeVal,
-          contactAddress: addressVal
+          contactAddress: addressVal,
+          _updatedAt: now
         };
         // Try server save, always persist to localStorage as fallback
         try {
@@ -343,7 +354,9 @@ const linktreeUrl = siteSettings.contactLinktree.startsWith('http') ? siteSettin
         } catch (_) {}
         const cachedContact = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
         Object.assign(cachedContact, contactPayload);
-        localStorage.setItem('dmfk_settings', JSON.stringify(cachedContact));
+        try {
+          localStorage.setItem('dmfk_settings', JSON.stringify(cachedContact));
+        } catch (_) {}
         contactModal.close();
         window.location.reload();
       });

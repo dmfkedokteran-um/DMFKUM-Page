@@ -673,15 +673,60 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
 
         let newHeroImageUrl = convertDriveUrl(heroUrlInput?.value || "");
 
-        // Convert file to base64 DataURL (works on Vercel static hosting)
+        // Convert file with compression and /api/upload attempt
         const file = heroFileInput?.files?.[0];
         if (file) {
-          newHeroImageUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = () => resolve(newHeroImageUrl);
-            reader.readAsDataURL(file);
-          });
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
+            if (upRes.ok) {
+              const upData = await upRes.json();
+              if (upData && upData.fileUrl) {
+                newHeroImageUrl = upData.fileUrl;
+              }
+            }
+          } catch (_) {}
+
+          if (!newHeroImageUrl || newHeroImageUrl === convertDriveUrl(heroUrlInput?.value || "")) {
+            newHeroImageUrl = await new Promise<string>((resolve) => {
+              const img = new Image();
+              const objectUrl = URL.createObjectURL(file);
+              img.onload = () => {
+                URL.revokeObjectURL(objectUrl);
+                const maxDim = 1280;
+                let width = img.width;
+                let height = img.height;
+                if (width > maxDim || height > maxDim) {
+                  if (width > height) {
+                    height = Math.round((height * maxDim) / width);
+                    width = maxDim;
+                  } else {
+                    width = Math.round((width * maxDim) / height);
+                    height = maxDim;
+                  }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(width, 1);
+                canvas.height = Math.max(height, 1);
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  ctx.drawImage(img, 0, 0, width, height);
+                  resolve(canvas.toDataURL('image/jpeg', 0.8));
+                } else {
+                  resolve(objectUrl);
+                }
+              };
+              img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => resolve(newHeroImageUrl);
+                reader.readAsDataURL(file);
+              };
+              img.src = objectUrl;
+            });
+          }
         }
 
         if (!newHeroImageUrl) {
@@ -689,19 +734,23 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
           return;
         }
 
+        const now = Date.now();
         // Try server save, always persist to localStorage as fallback
         try {
           await fetch("/api/settings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ heroImage: newHeroImageUrl }),
+            body: JSON.stringify({ heroImage: newHeroImageUrl, _updatedAt: now }),
           }).catch(() => {});
         } catch (_) {}
         const cachedSettings = JSON.parse(
           localStorage.getItem("dmfk_settings") || "{}",
         );
         cachedSettings.heroImage = newHeroImageUrl;
-        localStorage.setItem("dmfk_settings", JSON.stringify(cachedSettings));
+        cachedSettings._updatedAt = now;
+        try {
+          localStorage.setItem("dmfk_settings", JSON.stringify(cachedSettings));
+        } catch (_) {}
         heroModal.close();
         window.location.reload();
       });

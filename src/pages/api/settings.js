@@ -45,12 +45,24 @@ export async function POST({ request }) {
     const { data: current } = await readCloudDB('settings', defaultSettingsData);
 
     const currentUrls = collectUploadUrls(current);
-    const updated = { ...current, ...entry };
+    const updated = { 
+      ...current, 
+      ...entry,
+      _updatedAt: entry._updatedAt || Date.now()
+    };
     const updatedUrls = collectUploadUrls(updated);
+
+    // Protected system assets that must never be deleted
+    const protectedFiles = new Set([
+      '/uploads/parliament_logo.png',
+      '/uploads/hero_bg.jpg',
+      '/uploads/org_bg.jpg',
+      '/uploads/ketua_umum_avatar.jpg'
+    ]);
 
     // Delete any upload file URL that was in current settings but is no longer present in updated settings
     for (const url of currentUrls) {
-      if (!updatedUrls.has(url)) {
+      if (!updatedUrls.has(url) && !protectedFiles.has(url)) {
         await deletePhysicalUploadFile(url);
       }
     }

@@ -531,9 +531,18 @@ const komisiList: { code: string; title: string }[] =
           const current = JSON.parse(
             localStorage.getItem("dmfk_settings") || "{}",
           );
-          const merged = { ...current, ...resData.settings };
-          localStorage.setItem("dmfk_settings", JSON.stringify(merged));
-          updateCategoryDropdown(resData.settings.orgStructure.komisi);
+          const localTime = Number(current._updatedAt) || 0;
+          const serverTime = Number(resData.settings._updatedAt) || 0;
+          let merged;
+          if (resData.isCloud) {
+            merged = serverTime >= localTime ? { ...current, ...resData.settings } : { ...resData.settings, ...current };
+          } else {
+            merged = (localTime > 0 && localTime >= serverTime) ? { ...resData.settings, ...current } : { ...current, ...resData.settings };
+          }
+          try {
+            localStorage.setItem("dmfk_settings", JSON.stringify(merged));
+          } catch (_) {}
+          updateCategoryDropdown(merged.orgStructure?.komisi || resData.settings.orgStructure.komisi);
         }
       })
       .catch(() => {});
