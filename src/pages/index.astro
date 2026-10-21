@@ -144,13 +144,14 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
           newsList.length > 0 ? (
             newsList.slice(0, 3).map((news) => (
               <a
-                href="/proker"
+                href={`/proker?id=${news.id}`}
                 class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/80 flex flex-col h-full cursor-pointer"
               >
                 <div class="relative overflow-hidden aspect-[16/10] bg-gray-100 shrink-0">
                   <img
                     src={news.image}
                     alt={news.title}
+                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540317580384-e5d43867caa6?auto=format&fit=crop&w=600&q=80';"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                   />
@@ -472,9 +473,9 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       container.innerHTML = top3
         .map(
           (news) => `
-        <a href="/proker" class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/80 flex flex-col h-full cursor-pointer">
+        <a href="/proker?id=${news.id}" class="group bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(225,29,72,0.08)] overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-gray-100/80 flex flex-col h-full cursor-pointer">
           <div class="relative overflow-hidden shrink-0 aspect-[16/10] bg-gray-100">
-            <img src="${news.image}" alt="${news.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+            <img src="${news.image}" alt="${news.title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540317580384-e5d43867caa6?auto=format&fit=crop&w=600&q=80';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
             <div class="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 shadow-sm border border-rose-100/50">
               ${news.category}
             </div>
@@ -591,7 +592,9 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data.news)) {
-          localStorage.setItem("dmfk_news", JSON.stringify(data.news));
+          try {
+            localStorage.setItem("dmfk_news", JSON.stringify(data.news));
+          } catch (_) {}
           renderHomeNews(data.news);
         }
       })
@@ -601,7 +604,9 @@ const docsList = Array.isArray(docsListRaw) ? docsListRaw : [];
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data.docs)) {
-          localStorage.setItem("dmfk_docs", JSON.stringify(data.docs));
+          try {
+            localStorage.setItem("dmfk_docs", JSON.stringify(data.docs));
+          } catch (_) {}
           renderHomeDocs(data.docs);
         }
       })

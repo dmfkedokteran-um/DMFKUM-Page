@@ -99,11 +99,17 @@ const DEFAULT_PROFILE_SETTINGS = {
 
 const { data: cloudSettings } = await readCloudDB('settings', defaultSettingsData);
 
-const siteSettings = Object.assign({}, DEFAULT_PROFILE_SETTINGS, defaultSettingsData, cloudSettings, {
-  orgStructure: (cloudSettings && cloudSettings.orgStructure) || (defaultSettingsData && defaultSettingsData.orgStructure) || DEFAULT_ORG_STRUCTURE
-});
+const rawOrg = (cloudSettings && cloudSettings.orgStructure) || (defaultSettingsData && defaultSettingsData.orgStructure) || DEFAULT_ORG_STRUCTURE;
+const org = {
+  pembina: (rawOrg && rawOrg.pembina) || DEFAULT_ORG_STRUCTURE.pembina,
+  presidium: (rawOrg && Array.isArray(rawOrg.presidium) && rawOrg.presidium.length > 0) ? rawOrg.presidium : DEFAULT_ORG_STRUCTURE.presidium,
+  sekben: (rawOrg && Array.isArray(rawOrg.sekben) && rawOrg.sekben.length > 0) ? rawOrg.sekben : DEFAULT_ORG_STRUCTURE.sekben,
+  komisi: (rawOrg && Array.isArray(rawOrg.komisi) && rawOrg.komisi.length > 0) ? rawOrg.komisi : DEFAULT_ORG_STRUCTURE.komisi
+};
 
-const org = siteSettings.orgStructure;
+const siteSettings = Object.assign({}, DEFAULT_PROFILE_SETTINGS, defaultSettingsData, cloudSettings, {
+  orgStructure: org
+});
 ---
 
 <Layout title="Profil DMFK UM - Universitas Negeri Malang" description="Visi, Misi, dan Struktur Organisasi kepengurusan DMFK UM Universitas Negeri Malang.">
@@ -1022,11 +1028,13 @@ const org = siteSettings.orgStructure;
     fetch('/api/settings')
       .then(res => res.ok ? res.json() : null)
       .then(resData => {
-        if (resData && resData.isCloud && resData.settings && typeof resData.settings === 'object') {
+        if (resData && resData.settings && typeof resData.settings === 'object') {
           const serverSettings = resData.settings;
           const current = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
           const merged = { ...current, ...serverSettings };
-          localStorage.setItem('dmfk_settings', JSON.stringify(merged));
+          try {
+            localStorage.setItem('dmfk_settings', JSON.stringify(merged));
+          } catch (_) {}
           applyProfileSettingsToDOM(merged);
         }
       })
@@ -1167,7 +1175,7 @@ const org = siteSettings.orgStructure;
 
     // 3. Dynamic Org Structure Editor Modal
     const editOrgBtn = document.getElementById('edit-org-btn');
-    const orgModal = document.getElementById('org-modal') as HTMLDialogElement | null;
+    const orgModal = document.getElementById('org-modal') as (HTMLDialogElement & { __initialized?: boolean }) | null;
     const closeOrgModalBtn = document.getElementById('close-org-modal-btn');
     const orgForm = document.getElementById('org-form') as HTMLFormElement | null;
 
@@ -1175,7 +1183,7 @@ const org = siteSettings.orgStructure;
       editOrgBtn.addEventListener('click', () => {
         try {
           const s = JSON.parse(localStorage.getItem('dmfk_settings') || '{}');
-          if (s.orgStructure) {
+          if (s.orgStructure && typeof s.orgStructure === 'object') {
             localOrgData = JSON.parse(JSON.stringify(s.orgStructure));
           } else {
             localOrgData = JSON.parse(orgForm?.getAttribute('data-org') || '{}');
@@ -1183,6 +1191,32 @@ const org = siteSettings.orgStructure;
         } catch (e) {
           localOrgData = JSON.parse(orgForm?.getAttribute('data-org') || '{}');
         }
+
+        // Ensure all required sections are present so modal never renders empty sections
+        if (!localOrgData.pembina) {
+          localOrgData.pembina = { title: 'Pembina Organisasi', name: '', nip: '', avatar: '' };
+        }
+        if (!Array.isArray(localOrgData.presidium) || localOrgData.presidium.length === 0) {
+          localOrgData.presidium = [
+            { role: 'Ketua Umum', name: '', dept: '', avatar: '' },
+            { role: 'Wakil Ketua', name: '', dept: '', avatar: '' }
+          ];
+        }
+        if (!Array.isArray(localOrgData.sekben) || localOrgData.sekben.length === 0) {
+          localOrgData.sekben = [
+            { role: 'Sekretaris Umum', name: '', dept: '', avatar: '' },
+            { role: 'Bendahara Umum', name: '', dept: '', avatar: '' }
+          ];
+        }
+        if (!Array.isArray(localOrgData.komisi) || localOrgData.komisi.length === 0) {
+          localOrgData.komisi = [
+            { id: 'komisi-1', code: 'Komisi I', title: 'Advokasi & Aspirasi', themeColor: 'rose', ketua: { name: '', dept: '', avatar: '' }, anggota: [] },
+            { id: 'komisi-2', code: 'Komisi II', title: 'Legislasi & Regulasi', themeColor: 'blue', ketua: { name: '', dept: '', avatar: '' }, anggota: [] },
+            { id: 'komisi-3', code: 'Komisi III', title: 'Pengawasan & Keuangan', themeColor: 'emerald', ketua: { name: '', dept: '', avatar: '' }, anggota: [] },
+            { id: 'komisi-4', code: 'Komisi IV', title: 'Humas & Informasi', themeColor: 'fuchsia', ketua: { name: '', dept: '', avatar: '' }, anggota: [] }
+          ];
+        }
+
         renderOrgFormInputs();
         orgModal.showModal();
       });
@@ -1193,6 +1227,99 @@ const org = siteSettings.orgStructure;
 
     // Data State for Modal
     let localOrgData = orgForm ? JSON.parse(orgForm.getAttribute('data-org') || '{}') : {};
+
+    // Helper: Synchronize all active DOM input values into localOrgData before re-rendering or saving
+    function syncInputsToLocalOrgData() {
+      if (!orgForm) return;
+
+      // 1. Pembina
+      if (!localOrgData.pembina) localOrgData.pembina = {};
+      const titleEl = document.getElementById('pembina-title') as HTMLInputElement | null;
+      const nameEl = document.getElementById('pembina-name') as HTMLInputElement | null;
+      const nipEl = document.getElementById('pembina-nip') as HTMLInputElement | null;
+      const avatarEl = document.getElementById('pembina-avatar') as HTMLInputElement | null;
+      if (titleEl) localOrgData.pembina.title = titleEl.value;
+      if (nameEl) localOrgData.pembina.name = nameEl.value;
+      if (nipEl) localOrgData.pembina.nip = nipEl.value;
+      if (avatarEl) localOrgData.pembina.avatar = avatarEl.value;
+
+      // 2. Presidium
+      const presRoles = orgForm.querySelectorAll('.pres-role') as NodeListOf<HTMLInputElement>;
+      const presNames = orgForm.querySelectorAll('.pres-name') as NodeListOf<HTMLInputElement>;
+      const presDepts = orgForm.querySelectorAll('.pres-dept') as NodeListOf<HTMLInputElement>;
+      const presAvatars = orgForm.querySelectorAll('.pres-avatar') as NodeListOf<HTMLInputElement>;
+      if (presRoles.length > 0) {
+        const list: any[] = [];
+        presRoles.forEach((roleEl, idx) => {
+          list.push({
+            role: roleEl.value,
+            name: presNames[idx]?.value ?? '',
+            dept: presDepts[idx]?.value ?? '',
+            avatar: presAvatars[idx]?.value ?? ''
+          });
+        });
+        localOrgData.presidium = list;
+      }
+
+      // 3. Sekben
+      const sbRoles = orgForm.querySelectorAll('.sb-role') as NodeListOf<HTMLInputElement>;
+      const sbNames = orgForm.querySelectorAll('.sb-name') as NodeListOf<HTMLInputElement>;
+      const sbDepts = orgForm.querySelectorAll('.sb-dept') as NodeListOf<HTMLInputElement>;
+      const sbAvatars = orgForm.querySelectorAll('.sb-avatar') as NodeListOf<HTMLInputElement>;
+      if (sbRoles.length > 0) {
+        const list: any[] = [];
+        sbRoles.forEach((roleEl, idx) => {
+          list.push({
+            role: roleEl.value,
+            name: sbNames[idx]?.value ?? '',
+            dept: sbDepts[idx]?.value ?? '',
+            avatar: sbAvatars[idx]?.value ?? ''
+          });
+        });
+        localOrgData.sekben = list;
+      }
+
+      // 4. Komisi
+      const komCodes = orgForm.querySelectorAll('.kom-code') as NodeListOf<HTMLInputElement>;
+      const komTitles = orgForm.querySelectorAll('.kom-title') as NodeListOf<HTMLInputElement>;
+      const komKetuaNames = orgForm.querySelectorAll('.kom-ketua-name') as NodeListOf<HTMLInputElement>;
+      const komKetuaDepts = orgForm.querySelectorAll('.kom-ketua-dept') as NodeListOf<HTMLInputElement>;
+      const komKetuaAvatars = orgForm.querySelectorAll('.kom-ketua-avatar') as NodeListOf<HTMLInputElement>;
+      if (komCodes.length > 0) {
+        const list: any[] = [];
+        komCodes.forEach((codeEl, kIdx) => {
+          const komCard = codeEl.closest('.bg-white');
+          const memNames = komCard?.querySelectorAll('.kom-mem-name') as NodeListOf<HTMLInputElement> | undefined;
+          const memDepts = komCard?.querySelectorAll('.kom-mem-dept') as NodeListOf<HTMLInputElement> | undefined;
+          const memAvatars = komCard?.querySelectorAll('.kom-mem-avatar') as NodeListOf<HTMLInputElement> | undefined;
+
+          const anggota: any[] = [];
+          if (memNames && memNames.length > 0) {
+            memNames.forEach((memNameEl, aIdx) => {
+              anggota.push({
+                name: memNameEl.value,
+                dept: memDepts?.[aIdx]?.value ?? '',
+                avatar: memAvatars?.[aIdx]?.value ?? ''
+              });
+            });
+          }
+
+          list.push({
+            id: localOrgData.komisi?.[kIdx]?.id || `komisi-${kIdx + 1}`,
+            code: codeEl.value,
+            title: komTitles[kIdx]?.value ?? '',
+            themeColor: localOrgData.komisi?.[kIdx]?.themeColor || (kIdx % 2 === 0 ? 'rose' : 'blue'),
+            ketua: {
+              name: komKetuaNames[kIdx]?.value ?? '',
+              dept: komKetuaDepts[kIdx]?.value ?? '',
+              avatar: komKetuaAvatars[kIdx]?.value ?? ''
+            },
+            anggota
+          });
+        });
+        localOrgData.komisi = list;
+      }
+    }
 
     function renderOrgFormInputs() {
       if (!orgForm) return;
@@ -1303,45 +1430,53 @@ const org = siteSettings.orgStructure;
 
     // Global helper functions attached to window for modal buttons
     (window as any).removePresidiumItem = (idx: number) => {
+      syncInputsToLocalOrgData();
       localOrgData.presidium.splice(idx, 1);
       renderOrgFormInputs();
     };
 
     (window as any).removeSekbenItem = (idx: number) => {
+      syncInputsToLocalOrgData();
       localOrgData.sekben.splice(idx, 1);
       renderOrgFormInputs();
     };
 
     (window as any).removeKomisiItem = (idx: number) => {
+      syncInputsToLocalOrgData();
       localOrgData.komisi.splice(idx, 1);
       renderOrgFormInputs();
     };
 
     (window as any).addAnggotaItem = (kIdx: number) => {
+      syncInputsToLocalOrgData();
       if (!localOrgData.komisi[kIdx].anggota) localOrgData.komisi[kIdx].anggota = [];
       localOrgData.komisi[kIdx].anggota.push({ name: '', dept: '', avatar: '' });
       renderOrgFormInputs();
     };
 
     (window as any).removeAnggotaItem = (kIdx: number, aIdx: number) => {
+      syncInputsToLocalOrgData();
       localOrgData.komisi[kIdx].anggota.splice(aIdx, 1);
       renderOrgFormInputs();
     };
 
     // Add buttons handlers
     document.getElementById('add-presidium-btn')?.addEventListener('click', () => {
+      syncInputsToLocalOrgData();
       if (!localOrgData.presidium) localOrgData.presidium = [];
       localOrgData.presidium.push({ role: 'Wakil Ketua', name: '', dept: '', avatar: '' });
       renderOrgFormInputs();
     });
 
     document.getElementById('add-sekben-btn')?.addEventListener('click', () => {
+      syncInputsToLocalOrgData();
       if (!localOrgData.sekben) localOrgData.sekben = [];
       localOrgData.sekben.push({ role: 'Sekretaris', name: '', dept: '', avatar: '' });
       renderOrgFormInputs();
     });
 
     document.getElementById('add-komisi-btn')?.addEventListener('click', () => {
+      syncInputsToLocalOrgData();
       if (!localOrgData.komisi) localOrgData.komisi = [];
       const num = localOrgData.komisi.length + 1;
       localOrgData.komisi.push({
@@ -1359,102 +1494,77 @@ const org = siteSettings.orgStructure;
     if (orgForm && orgModal) {
       orgForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        syncInputsToLocalOrgData();
 
         // 0. Process Pembina Photo Upload
-        const pembinaTitle = (document.getElementById('pembina-title') as HTMLInputElement)?.value.trim() || 'Pembina Organisasi';
-        const pembinaName = (document.getElementById('pembina-name') as HTMLInputElement)?.value.trim() || '';
-        const pembinaNip = (document.getElementById('pembina-nip') as HTMLInputElement)?.value.trim() || '';
-        const pembinaAvatarInput = (document.getElementById('pembina-avatar') as HTMLInputElement)?.value.trim() || '';
         const pembinaFileInput = document.getElementById('pembina-file') as HTMLInputElement | null;
-        const pembinaAvatar = await uploadFileIfSelected(pembinaFileInput, pembinaAvatarInput || localOrgData.pembina?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80');
+        const pembinaAvatar = await uploadFileIfSelected(pembinaFileInput, localOrgData.pembina?.avatar || '');
 
         const updatedPembina = {
-          title: pembinaTitle,
-          name: pembinaName,
-          nip: pembinaNip,
+          title: localOrgData.pembina?.title?.trim() || 'Pembina Organisasi',
+          name: localOrgData.pembina?.name?.trim() || '',
+          nip: localOrgData.pembina?.nip?.trim() || '',
           avatar: pembinaAvatar
         };
 
         // 1. Process Presidium (Ketua / Wakil)
-        const presRoles = orgForm.querySelectorAll('.pres-role') as NodeListOf<HTMLInputElement>;
-        const presNames = orgForm.querySelectorAll('.pres-name') as NodeListOf<HTMLInputElement>;
-        const presDepts = orgForm.querySelectorAll('.pres-dept') as NodeListOf<HTMLInputElement>;
-        const presAvatars = orgForm.querySelectorAll('.pres-avatar') as NodeListOf<HTMLInputElement>;
         const presFiles = orgForm.querySelectorAll('.pres-file') as NodeListOf<HTMLInputElement>;
-        
         const updatedPresidium: any[] = [];
-        for (let idx = 0; idx < presRoles.length; idx++) {
-          if (presNames[idx]?.value.trim()) {
-            const avatarUrl = await uploadFileIfSelected(presFiles[idx], presAvatars[idx]?.value.trim() || localOrgData.presidium?.[idx]?.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80');
-            updatedPresidium.push({
-              role: presRoles[idx].value.trim(),
-              name: presNames[idx].value.trim(),
-              dept: presDepts[idx]?.value.trim() || '',
-              avatar: avatarUrl
-            });
-          }
+        for (let idx = 0; idx < (localOrgData.presidium || []).length; idx++) {
+          const item = localOrgData.presidium[idx];
+          const avatarUrl = await uploadFileIfSelected(presFiles[idx], item.avatar || '');
+          updatedPresidium.push({
+            role: item.role?.trim() || (idx === 0 ? 'Ketua Umum' : 'Wakil Ketua'),
+            name: item.name?.trim() || '',
+            dept: item.dept?.trim() || '',
+            avatar: avatarUrl
+          });
         }
 
         // 2. Process Sekben (Sekretaris / Bendahara)
-        const sbRoles = orgForm.querySelectorAll('.sb-role') as NodeListOf<HTMLInputElement>;
-        const sbNames = orgForm.querySelectorAll('.sb-name') as NodeListOf<HTMLInputElement>;
-        const sbDepts = orgForm.querySelectorAll('.sb-dept') as NodeListOf<HTMLInputElement>;
-        const sbAvatars = orgForm.querySelectorAll('.sb-avatar') as NodeListOf<HTMLInputElement>;
         const sbFiles = orgForm.querySelectorAll('.sb-file') as NodeListOf<HTMLInputElement>;
-
         const updatedSekben: any[] = [];
-        for (let idx = 0; idx < sbRoles.length; idx++) {
-          if (sbNames[idx]?.value.trim()) {
-            const avatarUrl = await uploadFileIfSelected(sbFiles[idx], sbAvatars[idx]?.value.trim() || localOrgData.sekben?.[idx]?.avatar || 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80');
-            updatedSekben.push({
-              role: sbRoles[idx].value.trim(),
-              name: sbNames[idx].value.trim(),
-              dept: sbDepts[idx]?.value.trim() || '',
-              avatar: avatarUrl
-            });
-          }
+        for (let idx = 0; idx < (localOrgData.sekben || []).length; idx++) {
+          const item = localOrgData.sekben[idx];
+          const avatarUrl = await uploadFileIfSelected(sbFiles[idx], item.avatar || '');
+          updatedSekben.push({
+            role: item.role?.trim() || (idx === 0 ? 'Sekretaris Umum' : 'Bendahara Umum'),
+            name: item.name?.trim() || '',
+            dept: item.dept?.trim() || '',
+            avatar: avatarUrl
+          });
         }
 
         // 3. Process Komisi
-        const komCodes = orgForm.querySelectorAll('.kom-code') as NodeListOf<HTMLInputElement>;
-        const komTitles = orgForm.querySelectorAll('.kom-title') as NodeListOf<HTMLInputElement>;
-        const komKetuaNames = orgForm.querySelectorAll('.kom-ketua-name') as NodeListOf<HTMLInputElement>;
-        const komKetuaDepts = orgForm.querySelectorAll('.kom-ketua-dept') as NodeListOf<HTMLInputElement>;
-        const komKetuaAvatars = orgForm.querySelectorAll('.kom-ketua-avatar') as NodeListOf<HTMLInputElement>;
-        const komKetuaFiles = orgForm.querySelectorAll('.kom-ketua-file') as NodeListOf<HTMLInputElement>;
-        
         const updatedKomisi: any[] = [];
-        for (let kIdx = 0; kIdx < komCodes.length; kIdx++) {
-          const komCard = komCodes[kIdx].closest('.bg-white');
-          const memNames = komCard?.querySelectorAll('.kom-mem-name') as NodeListOf<HTMLInputElement>;
-          const memDepts = komCard?.querySelectorAll('.kom-mem-dept') as NodeListOf<HTMLInputElement>;
-          const memAvatars = komCard?.querySelectorAll('.kom-mem-avatar') as NodeListOf<HTMLInputElement>;
-          const memFiles = komCard?.querySelectorAll('.kom-mem-file') as NodeListOf<HTMLInputElement>;
+        const komCodes = orgForm.querySelectorAll('.kom-code') as NodeListOf<HTMLInputElement>;
+        for (let kIdx = 0; kIdx < (localOrgData.komisi || []).length; kIdx++) {
+          const kom = localOrgData.komisi[kIdx];
+          const komCard = komCodes[kIdx]?.closest('.bg-white');
+          const ketuaFile = komCard?.querySelector('.kom-ketua-file') as HTMLInputElement | null;
+          const ketuaAvatarUrl = await uploadFileIfSelected(ketuaFile, kom.ketua?.avatar || '');
 
-          const ketuaAvatarUrl = await uploadFileIfSelected(komKetuaFiles[kIdx], komKetuaAvatars[kIdx]?.value.trim() || localOrgData.komisi?.[kIdx]?.ketua?.avatar || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80');
-          
+          const memFiles = komCard?.querySelectorAll('.kom-mem-file') as NodeListOf<HTMLInputElement> | undefined;
           const anggotaList: any[] = [];
-          if (memNames) {
-            for (let aIdx = 0; aIdx < memNames.length; aIdx++) {
-              if (memNames[aIdx].value.trim()) {
-                const memAvatarUrl = await uploadFileIfSelected(memFiles[aIdx], memAvatars[aIdx]?.value.trim() || localOrgData.komisi?.[kIdx]?.anggota?.[aIdx]?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80');
-                anggotaList.push({
-                  name: memNames[aIdx].value.trim(),
-                  dept: memDepts?.[aIdx]?.value.trim() || '',
-                  avatar: memAvatarUrl
-                });
-              }
-            }
+          for (let aIdx = 0; aIdx < (kom.anggota || []).length; aIdx++) {
+            const mem = kom.anggota[aIdx];
+            const memFile = memFiles?.[aIdx] || null;
+            const memAvatarUrl = await uploadFileIfSelected(memFile, mem.avatar || '');
+            anggotaList.push({
+              name: mem.name?.trim() || '',
+              dept: mem.dept?.trim() || '',
+              avatar: memAvatarUrl
+            });
           }
 
           updatedKomisi.push({
-            id: localOrgData.komisi?.[kIdx]?.id || `komisi-${kIdx+1}`,
-            code: komCodes[kIdx].value.trim(),
-            title: komTitles[kIdx]?.value.trim() || '',
-            themeColor: localOrgData.komisi?.[kIdx]?.themeColor || (kIdx % 2 === 0 ? 'rose' : 'blue'),
+            id: kom.id || `komisi-${kIdx + 1}`,
+            code: kom.code?.trim() || `Komisi ${kIdx + 1}`,
+            title: kom.title?.trim() || '',
+            themeColor: kom.themeColor || (kIdx % 2 === 0 ? 'rose' : 'blue'),
             ketua: {
-              name: komKetuaNames[kIdx]?.value.trim() || '',
-              dept: komKetuaDepts[kIdx]?.value.trim() || '',
+              name: kom.ketua?.name?.trim() || '',
+              dept: kom.ketua?.dept?.trim() || '',
               avatar: ketuaAvatarUrl
             },
             anggota: anggotaList
@@ -1468,6 +1578,7 @@ const org = siteSettings.orgStructure;
           komisi: updatedKomisi
         };
 
+        localOrgData = JSON.parse(JSON.stringify(newOrgStructure));
         await saveSettings({ orgStructure: newOrgStructure });
 
         orgModal.close();
@@ -1476,7 +1587,14 @@ const org = siteSettings.orgStructure;
     }
   }
 
+  // Idempotent initialization
   setupProfileAdmin();
-  document.addEventListener('astro:after-swap', setupProfileAdmin);
-  document.addEventListener('astro:page-load', setupProfileAdmin);
+  document.addEventListener('astro:after-swap', () => {
+    const m = document.getElementById('org-modal') as any;
+    if (m) delete m.__initialized;
+    setupProfileAdmin();
+  });
+  document.addEventListener('astro:page-load', () => {
+    setupProfileAdmin();
+  });
 </script>
